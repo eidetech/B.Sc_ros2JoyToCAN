@@ -9,7 +9,7 @@ CANbus::CANbus()
         perror("Socket error");
     }
 
-    strcpy(ifr.ifr_name, "vcan0");
+    strcpy(ifr.ifr_name, "can0");
     ioctl(this->_socket, SIOCGIFINDEX, &ifr);
 
     memset(&addr, 0, sizeof(addr));
@@ -22,10 +22,10 @@ CANbus::CANbus()
     }
 
     
-    this->tx_cartCoord.can_id = 1; // ID of CAN message
+    this->tx_cartCoord.can_id = 0x01; // ID of CAN message
     this->tx_cartCoord.can_dlc = 8; // Size of payload
 
-    this->rx_cartCoord.can_id = 2; // ID of CAN message
+    this->rx_cartCoord.can_id = 0x02; // ID of CAN message
     this->rx_cartCoord.can_dlc = 8; // Size of payload
 }
 
@@ -41,19 +41,19 @@ CANbus::~CANbus()
 
 void CANbus::send_data(float ps4Data[])
 {
-    int32_t ps4OutData[8];
+    uint32_t ps4OutData[8];
     uint8_t sign_frame1 = 0b00000000; // 0 = +, 1 = -
 
     for(int i = 0; i < 8; i++)
     {
         if(ps4Data[i] < 0)
         {
-            ps4OutData[i] = (int32_t)(ps4Data[i]*-1000000.);
+            ps4OutData[i] = (uint32_t)(ps4Data[i]*-1000000.);
             sign_frame1 |= (1U << i);
             //std::cout << ps4OutData[i] << std::endl;
         }else
         {
-            ps4OutData[i] = (int32_t)(ps4Data[i]*1000000.);
+            ps4OutData[i] = (uint32_t)(ps4Data[i]*1000000.);
             //std::cout << ps4OutData[i] << std::endl;
         }
         
@@ -69,14 +69,14 @@ void CANbus::send_data(float ps4Data[])
     //this->tx_cartCoord.data[7] = ps4OutData[7]; // unused
 
     
-    int32_t joyX = tx_cartCoord.data[0] | tx_cartCoord.data[1]<<8 | tx_cartCoord.data[2]<<16;
-    int32_t joyY = tx_cartCoord.data[3] | tx_cartCoord.data[4]<<8 | tx_cartCoord.data[5]<<16;
+    uint32_t joyX = tx_cartCoord.data[0] | tx_cartCoord.data[1]<<8 | tx_cartCoord.data[2]<<16;
+    uint32_t joyY = tx_cartCoord.data[3] | tx_cartCoord.data[4]<<8 | tx_cartCoord.data[5]<<16;
 
     std::cout << "Received joyX:" << joyX << std::endl;
     std::cout << "Received joyY:" << joyY << std::endl;
     std::cout << "Received sign:";
 
-    std::bitset<8> y(tx_cartCoord.data[6]);
+    std::bitset<8> y(sign_frame1);
     std::cout << y << '\n';
 
     write(this->_socket, &this->tx_cartCoord, sizeof(struct can_frame));

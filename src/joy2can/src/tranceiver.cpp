@@ -44,8 +44,8 @@ class Tranceiver : public rclcpp::Node
     output.data.resize(8);
     output.data[0] = input->axes[0];
     output.data[1] = input->axes[1];
-    output.data[2] = input->axes[2];
-    output.data[3] = input->axes[5];
+    output.data[2] = input->axes[3];
+    output.data[3] = input->axes[4];
     output.data[4] = input->buttons[0];
     output.data[5] = input->buttons[1];
     output.data[6] = input->buttons[2];
@@ -53,8 +53,8 @@ class Tranceiver : public rclcpp::Node
 
     can_ps4_output[0] = input->axes[0];
     can_ps4_output[1] = input->axes[1];
-    can_ps4_output[2] = input->axes[2];
-    can_ps4_output[3] = input->axes[5];
+    can_ps4_output[2] = input->axes[3];
+    can_ps4_output[3] = input->axes[4];
     can_ps4_output[4] = input->buttons[0];
     can_ps4_output[5] = input->buttons[1];
     can_ps4_output[6] = input->buttons[2];
