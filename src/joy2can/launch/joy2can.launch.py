@@ -11,5 +11,12 @@ def generate_launch_description():
             package='joy2can',
             executable='tranceiver',
         ),
+        Node(
+            package='joy2can',
+            executable='odriveCAN.py',
+            output='screen',
+	    emulate_tty=True,
+	    arguments=[('__log_level:=debug')]
+        ),
 
     ])

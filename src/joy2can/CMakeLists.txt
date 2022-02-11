@@ -52,7 +52,11 @@ ament_python_install_package(${PROJECT_NAME})
 
 # Install Python executables
 install(PROGRAMS
-  scripts/odriveNode.py
+  scripts/odriveCAN.py
+  scripts/cmd_id_enums.py
+  scripts/motor.py
+  scripts/joySubscriber.py
+  scripts/odrive-cansimple.dbc
   DESTINATION lib/${PROJECT_NAME}
 )
 
