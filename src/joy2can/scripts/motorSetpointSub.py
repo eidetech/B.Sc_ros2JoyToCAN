@@ -13,8 +13,8 @@ class MotorSetpointSub(Node):
         self.subscription  # prevent unused variable warning
         self.spL = 0
         self.spR = 0
+        self.reset = 0.0;
 
     def listener_callback(self, msg):
-        # Set deadzone and map msg input to object variables
         self.spL = msg.data[0]
         self.spR = msg.data[1]

@@ -83,7 +83,6 @@ class Motor:
     self.bus.send(msg)
 
   def sendSetpoint(self, setpoint, vel_ff, torque_ff):
-      print("Going to " + str(setpoint))
       data = self.db.encode_message('Set_Input_Pos', {'Input_Pos': setpoint, 'Vel_FF': vel_ff, 'Torque_FF': torque_ff})
       msg = can.Message(arbitration_id=self.axisID_shifted | SET_INPUT_POS, data=data, is_extended_id=False)
       self.bus.send(msg)

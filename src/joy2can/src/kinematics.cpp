@@ -55,14 +55,24 @@ class Kinematics : public rclcpp::Node
     {
         kinematicsCalc.pz--;
     }
+
+    if(input->buttons[0] == 1.0)
+    {
+        kinematicsCalc.px = 0.0;
+        kinematicsCalc.pz = 0.0;
+    }else if (input->buttons[1] == 1.0)
+    {
+        kinematicsCalc.px = 2000;
+        kinematicsCalc.pz = 500;
+    }
     
     kinematicsCalc.calculate();
     std_msgs::msg::Float32MultiArray output;
     output.data.resize(2);
     output.data[0] = kinematicsCalc.setpointL;
     output.data[1] = kinematicsCalc.setpointR;
-
-    RCLCPP_INFO(this->get_logger(), "\n setpointL: %f", kinematicsCalc.setpointL);
+ 
+    //RCLCPP_INFO(this->get_logger(), "\n setpointL: %f", kinematicsCalc.setpointL);
 
     // ROS publisher
     publisher_->publish(output);

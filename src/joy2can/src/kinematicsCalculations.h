@@ -18,8 +18,8 @@ public:
     // Kinematic variables and constants
     float setpointL = 0;
     float setpointR = 0;
-    float px = 100;
-    float pz = 100;
+    float px = 0;
+    float pz = 0;
     float L1_start = 50; // Length of left string mm
     float L2_start = 2820 - 50; // Length of right string mm
     float L1 = 0;
