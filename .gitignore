@@ -2,6 +2,8 @@
 /build
 /install
 /log
+.vscode
+workspace.code-workspace
 
 # Prerequisites
 *.d
