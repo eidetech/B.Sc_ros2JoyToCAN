@@ -28,12 +28,14 @@ find_package(sensor_msgs REQUIRED)
 
 add_executable(tranceiver
 	src/tranceiver.cpp
-	src/canbus.cpp	
+	src/canbus.cpp
+	src/kinematics.cpp
 )
 ament_target_dependencies(tranceiver rclcpp std_msgs sensor_msgs)
 
 install(TARGETS
   tranceiver
+  kinematics
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
