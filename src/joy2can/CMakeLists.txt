@@ -66,7 +66,7 @@ install(PROGRAMS
   scripts/odriveCAN.py
   scripts/cmd_id_enums.py
   scripts/motor.py
-  scripts/joySubscriber.py
+  scripts/motorSetpointSub.py
   scripts/odrive-cansimple.dbc
   DESTINATION lib/${PROJECT_NAME}
 )
