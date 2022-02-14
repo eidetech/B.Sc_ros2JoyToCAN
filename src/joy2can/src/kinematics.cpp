@@ -9,66 +9,69 @@
 #include "sensor_msgs/msg/joy.hpp"
 
 #include "canbus.h"
+#include "kinematicsCalculations.h"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
-class Tranceiver : public rclcpp::Node
+class Kinematics : public rclcpp::Node
 {
   public:
-    Tranceiver()
-    : Node("tranceiver"), can(new CANbus)
+    Kinematics()
+    : Node("kinematics"), can(new CANbus)
     {
       // Subscriber
       subscription_ = this->create_subscription<sensor_msgs::msg::Joy>(
-      "joy", 10, std::bind(&Tranceiver::topic_callback, this, _1));
+      "joy", 10, std::bind(&Kinematics::topic_callback, this, _1));
 
       RCLCPP_INFO(this->get_logger(), "Subscribed to joy topic");
     
       // Publisher
-      publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("ps4", 10);
+      publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("motor_sp", 10);
 
-      RCLCPP_INFO(this->get_logger(), "Publishing to ps4 topic");
+      RCLCPP_INFO(this->get_logger(), "Publishing to motor_sp topic");
     }
 
-    ~Tranceiver()
+    ~Kinematics()
     {
         delete can;
     }
 
   private:
-    void topic_callback(const sensor_msgs::msg::Joy::SharedPtr input) const
+    void topic_callback(const sensor_msgs::msg::Joy::SharedPtr input)
     {
+    if (input->axes[0] > 0.1)
+    {
+        kinematicsCalc.px++;
+    }else if (input->axes[0] < -0.1)
+    {
+        kinematicsCalc.px--;
+    }
+
+    if (input->axes[1] > 0.1)
+    {
+        kinematicsCalc.pz++;
+    }else if (input->axes[1] < -0.1)
+    {
+        kinematicsCalc.pz--;
+    }
+    
+    kinematicsCalc.calculate();
     std_msgs::msg::Float32MultiArray output;
-    float can_ps4_output[8];
-    output.data.resize(8);
-    output.data[0] = input->axes[0];
-    output.data[1] = input->axes[1];
-    output.data[2] = input->axes[3];
-    output.data[3] = input->axes[4];
-    output.data[4] = input->buttons[0];
-    output.data[5] = input->buttons[1];
-    output.data[6] = input->buttons[2];
-    output.data[7] = input->buttons[3];
+    output.data.resize(2);
+    output.data[0] = kinematicsCalc.setpointL;
+    output.data[1] = kinematicsCalc.setpointR;
 
-    can_ps4_output[0] = input->axes[0];
-    can_ps4_output[1] = input->axes[1];
-    can_ps4_output[2] = input->axes[3];
-    can_ps4_output[3] = input->axes[4];
-    can_ps4_output[4] = input->buttons[0];
-    can_ps4_output[5] = input->buttons[1];
-    can_ps4_output[6] = input->buttons[2];
-    can_ps4_output[7] = input->buttons[3];
-
-    //RCLCPP_INFO(this->get_logger(), "\n%f", can_ps4_output[0]);
+    RCLCPP_INFO(this->get_logger(), "\n setpointL: %f", kinematicsCalc.setpointL);
 
     // ROS publisher
     publisher_->publish(output);
 
-    // CAN publisher
-    can->send_data(can_ps4_output);
+    // CAN publisher - commented out for now, but keeping it in case it becomes needed
+    //can->send_data(can_ps4_output);
     }
     CANbus* can;
+    KinematicsCalculations kinematicsCalc;
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr publisher_;
     rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr subscription_;
@@ -77,7 +80,7 @@ class Tranceiver : public rclcpp::Node
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<Tranceiver>());
+  rclcpp::spin(std::make_shared<Kinematics>());
   rclcpp::shutdown();
   return 0;
 }
