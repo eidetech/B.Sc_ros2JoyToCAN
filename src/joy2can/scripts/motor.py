@@ -10,8 +10,8 @@ class Motor:
     self.axisID_shifted = self.axisID << 5
     self.bus = bus
     self.db = db
-    self.x = 0
-    self.z = 0
+    self.sp = 0
+
 
   def init(self):
     # Calibration sequence for motors

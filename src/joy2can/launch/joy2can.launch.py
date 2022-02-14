@@ -13,6 +13,10 @@ def generate_launch_description():
         ),
         Node(
             package='joy2can',
+            executable='kinematics',
+        ),
+        Node(
+            package='joy2can',
             executable='odriveCAN.py',
             output='screen',
 	    emulate_tty=True,

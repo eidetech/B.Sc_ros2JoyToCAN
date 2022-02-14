@@ -11,7 +11,7 @@ from joySubscriber import *
 
 def main(args=None):
     rclpy.init(args=args)
-    joySubscriber = JoySubscriber()
+    motorSP = MotorSetpointSub()
 
     # Import database containing can messages (ROS2 environment could not find the file. Put absolute path to avoid error)
     db = cantools.database.load_file("/home/marcus/github/B.Sc_ros2JoyToCAN/src/joy2can/scripts/odrive-cansimple.dbc")
@@ -32,18 +32,18 @@ def main(args=None):
     M1.setLimits(10, 10)
 
     while True:
-        rclpy.spin_once(joySubscriber)
+        rclpy.spin_once(motorSP)
         #runSin()
-        M0.x = M0.x + (joySubscriber.joyZ / 2)
-        M0.sendSetpoint(M0.x, 0, 0)
+        M0.sp = motorSP.spL
+        M0.sendSetpoint(M0.sp, 0, 0)
 
-        M1.x = M1.x + (joySubscriber.joyX / 2)
-        M1.sendSetpoint(M1.x, 0, 0)
+        M1.sp = motorSP.spR
+        M1.sendSetpoint(M1.sp, 0, 0)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    joySubscriber.destroy_node()
+    motorSP.destroy_node()
     rclpy.shutdown()
 
     def runSin():
