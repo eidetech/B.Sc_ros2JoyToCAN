@@ -40,20 +40,20 @@ class Kinematics : public rclcpp::Node
   private:
     void topic_callback(const sensor_msgs::msg::Joy::SharedPtr input)
     {
-    if (input->axes[0] > 0.1)
+    if (input->axes[0] < -0.1)
     {
-        kinematicsCalc.px++;
-    }else if (input->axes[0] < -0.1)
+        kinematicsCalc.px = kinematicsCalc.px + 3;
+    }else if (input->axes[0] > 0.1)
     {
-        kinematicsCalc.px--;
+        kinematicsCalc.px = kinematicsCalc.px - 3; 
     }
 
-    if (input->axes[1] > 0.1)
+    if (input->axes[1] < -0.1)
     {
-        kinematicsCalc.pz++;
-    }else if (input->axes[1] < -0.1)
+        kinematicsCalc.pz = kinematicsCalc.pz + 3;
+    }else if (input->axes[1] > 0.1)
     {
-        kinematicsCalc.pz--;
+        kinematicsCalc.pz = kinematicsCalc.pz - 3;
     }
 
     if(input->buttons[0] == 1.0)
@@ -62,15 +62,17 @@ class Kinematics : public rclcpp::Node
         kinematicsCalc.pz = 0.0;
     }else if (input->buttons[1] == 1.0)
     {
-        kinematicsCalc.px = 2000;
+        kinematicsCalc.px = 500;
         kinematicsCalc.pz = 500;
     }
     
     kinematicsCalc.calculate();
     std_msgs::msg::Float32MultiArray output;
-    output.data.resize(2);
+    output.data.resize(4);
     output.data[0] = kinematicsCalc.setpointL;
     output.data[1] = kinematicsCalc.setpointR;
+    output.data[2] = kinematicsCalc.px;
+    output.data[3] = kinematicsCalc.pz;
  
     //RCLCPP_INFO(this->get_logger(), "\n setpointL: %f", kinematicsCalc.setpointL);
 

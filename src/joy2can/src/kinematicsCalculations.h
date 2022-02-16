@@ -20,15 +20,15 @@ public:
     float setpointR = 0;
     float px = 0;
     float pz = 0;
-    float L1_start = 50; // Length of left string mm
-    float L2_start = 2820 - 50; // Length of right string mm
+    float L1_start = 0; // Length of left string mm
+    float L2_start = 2820; // Length of right string mm
     float L1 = 0;
     float L2 = 0;
     const float c = 2820; // Length of top aluminium bar mm
-    const float r = 45; // Radius of wire wheel in mm
+    const float r = 75; // Radius of wire wheel in mm
     const float circumference = 2*PI*r; // Circumference of string wheel mm (2*pi*r)
     const float gearRatio = 10.;
-    const float encoderCountsPerRev = 2400.*gearRatio; // 2400 encoder count per revolution, and 10:1 gear reduction
+    const float encoderCountsPerRev = 8192.*gearRatio; // 8192 encoder count per revolution, and 10:1 gear reduction
     const float resolution = circumference/encoderCountsPerRev;
 };
 

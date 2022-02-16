@@ -13,8 +13,12 @@ class MotorSetpointSub(Node):
         self.subscription  # prevent unused variable warning
         self.spL = 0
         self.spR = 0
+        self.px = 0
+        self.pz = 0
         self.reset = 0.0;
 
     def listener_callback(self, msg):
-        self.spL = msg.data[0]
-        self.spR = msg.data[1]
+        self.spL = msg.data[1]
+        self.spR = msg.data[0]
+        self.px = msg.data[2]
+        self.pz = msg.data[3]

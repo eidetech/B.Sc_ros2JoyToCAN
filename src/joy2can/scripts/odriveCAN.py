@@ -28,8 +28,8 @@ def main(args=None):
     M0.setControlMode(AXIS_STATE_CLOSED_LOOP_CONTROL)
     M1.setControlMode(AXIS_STATE_CLOSED_LOOP_CONTROL)
 
-    M0.setLimits(10, 10)
-    M1.setLimits(10, 10)
+    M0.setLimits(6, 10)
+    M1.setLimits(6, 10)
 
     while True:
         rclpy.spin_once(motorSP)
@@ -40,7 +40,7 @@ def main(args=None):
         M1.sp = motorSP.spR
         M1.sendSetpoint(M1.sp, 0, 0)
 
-        print("M0 SP: " + str(M0.sp) + ", M1 SP: " + str(M1.sp))
+        print("x: " + str(motorSP.px) + ", M1 SP: " + str(motorSP.pz))
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
