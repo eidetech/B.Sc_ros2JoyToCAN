@@ -21,15 +21,21 @@ def main(args=None):
     M0 = Motor(0x00, bus, db)
     M1 = Motor(0x01, bus, db)
 
-    # M0.init() # Do a full calibration sequence
-    # time.sleep(2)
-    # M1.init() # Do a full calibration sequence
+    #M0.init() # Do a full calibration sequence
+    #time.sleep(2)
+    #M1.init() # Do a full calibration sequence
 
     M0.setControlMode(AXIS_STATE_CLOSED_LOOP_CONTROL)
     M1.setControlMode(AXIS_STATE_CLOSED_LOOP_CONTROL)
 
-    M0.setLimits(6, 10)
-    M1.setLimits(6, 10)
+    M0.setInputMode(INPUT_MODE_TRAP_TRAJ, AXIS_STATE_CLOSED_LOOP_CONTROL)
+    M1.setInputMode(INPUT_MODE_TRAP_TRAJ, AXIS_STATE_CLOSED_LOOP_CONTROL)
+
+    M0.configureTrapTraj(10, 10, 10, 0)
+    M1.configureTrapTraj(10, 10, 10, 0)
+
+    M0.setLimits(10, 10)
+    M1.setLimits(10, 10)
 
     while True:
         rclpy.spin_once(motorSP)

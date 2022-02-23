@@ -16,6 +16,7 @@ public:
     void calculate();
 
     // Kinematic variables and constants
+    bool parked = true;
     float setpointL = 0;
     float setpointR = 0;
     float px = 0;

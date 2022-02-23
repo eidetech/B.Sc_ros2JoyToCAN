@@ -77,7 +77,53 @@ class Motor:
           print("Axis has failed to enter control mode ", controlMode)
         break
 
+  def setInputMode(self, inputMode, controlMode):
+    # Set closed loop control loop
+    print("\nSetting input mode for axis ", self.axisID, " to ", inputMode)
+    data = self.db.encode_message('Set_Controller_Mode', {'Input_Mode': inputMode, 'Control_Mode': controlMode})
+    msg = can.Message(arbitration_id=self.axisID_shifted | SET_CONTROLLER_MODES, is_extended_id=False, data=data)
+    #print(msg)
+
+    # Try to send the CAN message to the bus
+    try:
+      self.bus.send(msg)
+      print("Message successfully sent on {}".format(self.bus.channel_info))
+    except can.CanError:
+      print("Message NOT sent!")
+
+  def configureTrapTraj(self, trajVelLimit, trajAccelLimit, trajDecelLimit, trajInertia):
+    print("Setting trajectory velocity limit...")
+    data = self.db.encode_message('Set_Traj_Vel_Limit', {'Traj_Vel_Limit': trajVelLimit})
+    msg = can.Message(arbitration_id=self.axisID_shifted | SET_TRAJ_VEL_LIMIT, is_extended_id=False, data=data)
+    # Try to send the CAN message to the bus
+    try:
+      self.bus.send(msg)
+      print("Message successfully sent on {}".format(self.bus.channel_info))
+    except can.CanError:
+      print("Message NOT sent!")
+
+    print("Setting trajectory acceleration limits...")
+    data = self.db.encode_message('Set_Traj_Accel_Limits', {'Traj_Accel_Limit': trajAccelLimit, 'Traj_Decel_Limit': trajDecelLimit})
+    msg = can.Message(arbitration_id=self.axisID_shifted | SET_TRAJ_ACCEL_LIMIT, is_extended_id=False, data=data)
+    # Try to send the CAN message to the bus
+    try:
+      self.bus.send(msg)
+      print("Message successfully sent on {}".format(self.bus.channel_info))
+    except can.CanError:
+      print("Message NOT sent!")
+
+    print("Setting trajectory inertia...")
+    data = self.db.encode_message('Set_Traj_Inertia', {'Traj_Inertia': trajInertia})
+    msg = can.Message(arbitration_id=self.axisID_shifted | SET_TRAJ_INERTIA, is_extended_id=False, data=data)
+    # Try to send the CAN message to the bus
+    try:
+      self.bus.send(msg)
+      print("Message successfully sent on {}".format(self.bus.channel_info))
+    except can.CanError:
+      print("Message NOT sent!")
+
   def setLimits(self, vel_limit, current_limit):
+    print("Setting velocity and current limits...")
     data = self.db.encode_message('Set_Limits', {'Velocity_Limit': vel_limit, 'Current_Limit': current_limit})
     msg = can.Message(arbitration_id=self.axisID_shifted | SET_LIMITS, is_extended_id=False, data=data)
     self.bus.send(msg)
