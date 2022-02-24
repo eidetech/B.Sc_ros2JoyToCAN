@@ -1,49 +1,72 @@
 clc; clear all; close all;
+% Boolean to stop while loop when height is reached
+topNotReached = true;
+% Vertical distance between horizontal lines
+vStep = 500;
+% R
+xStep = 50;
+yStep = 50;
+startHeight = 100;
+w = 2350;
+h = 2000;
+side = 0;
 
-topNotReached = true
-resolution = 10
-heightStep = 500
-startHeight = 100
-w = 2350
-h = 10000
-side = 0
+xPos = 0;
+yPos = 0;
 
-xPos = 0
-yPos = 0
+th = linspace(-pi/2, pi/2, yStep);
 
-i = 0
+% Initialize counters
+i = 1;
+t = 1;
 
-
-x = linspace(0, w, resolution)
-y = linspace(0, h, resolution)
 fig = figure
-movegui(fig,[1500 600]);
+movegui(fig,[1500 1500]);
 hold on
-xlim([-100 w+100])
-ylim([-100 h+1000])
+xlim([-1000 w+1000])
+ylim([-100 h+100])
+
 while topNotReached
-    %plot([0 w],[startHeight+heightStep*i startHeight+heightStep*i])
-    
     if(side == 0)
-    while (xPos <= w)
-    plot(xPos, yPos, 'o')
-    xPos=xPos+100
-    end
+        while (xPos < w)
+            plot(xPos, yPos, 'o')
+            xPos=xPos+xStep;
+        end
     elseif(side == 1)
-    while (xPos >= 0)
-    plot(xPos, yPos, 'o')
-    xPos=xPos-100
+        while (xPos > 0)
+            plot(xPos, yPos, 'o')
+            xPos=xPos-xStep;
+        end
     end
-    if(heightStep*i >= h)
+
+    if(vStep*i >= h)
         topNotReached = false
         break
     end
+
     if(side == 0)
-        plot([w w], [startHeight+heightStep*i startHeight+heightStep*(i+1)])
+        k = 1;
+        while(xPos >= w && yPos < vStep*t)
+            R = vStep/2;
+            xPos = R*cos(th(k))+w;
+            yPos = R*sin(th(k))+(vStep*i)/2;
+            plot(xPos,yPos, '*');
+            k = k+1;
+        end
         side = 1
+        i=i+1
     elseif(side == 1)
-        plot([0 0], [startHeight+heightStep*i startHeight+heightStep*(i+1)])
+        k = 1;
+        while(yPos < t*vStep)
+            R = vStep/2;
+            xPos = R*cos(th(k));
+            yPos = R*sin(th(k))+((i)*vStep)/2;
+            plot(-xPos,yPos, '*');
+            k = k+1;
+        end
         side = 0
+        i=i+1
     end
 i=i+1
+t =t+1
 end

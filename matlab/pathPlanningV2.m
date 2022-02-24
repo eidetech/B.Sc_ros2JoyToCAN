@@ -1,30 +1,48 @@
 clc; clear all; close all;
+% Boolean to stop while loop when height is reached
+topNotReached = true;
 
-topNotReached = true
-resolution = 10
-heightStep = 500
-xStep = 1
-startHeight = 100
-w = 2350
-h = 10000
-side = 0
+% Define frame size
+w = 2350; % width
+h = 2000; % height
+% Vertical distance between horizontal lines
+vStep = 500;
 
-xPos = 0
-yPos = 0
+% Resolution/stepping of x and y axis (y for semicircle points)
+xStep = 50;
+yStep = 50;
 
-i = 0
+% Define start height and width (not implemented yet)
+startHeight = 100;
+startWidth = 100;
 
+% Set intitial conditions
+side = 0; % 0 = left to right, 1 = right to left
 
-x = linspace(0, w, resolution)
-y = linspace(0, h, resolution)
+% ### DONT EDIT ANYTHING BELOW ###
+if(side == 0)
+    xPos = 0;
+    yPos = 0;
+elseif(side == 1)
+    xPos = w;
+    yPos = 0;
+end
+
+% Points for semicircle plotting
+th = linspace(-pi/2, pi/2, yStep);
+
+% Initialize counters
+i = 1;
+t = 1;
+
+% Configure figure settings
 fig = figure
-movegui(fig,[1500 600]);
+movegui(fig,[1500 1500]);
 hold on
-xlim([-100 w+100])
-ylim([-100 h+1000])
+xlim([-1000 w+1000])
+ylim([-100 h+100])
+
 while topNotReached
-    %plot([0 w],[startHeight+heightStep*i startHeight+heightStep*i])
-    
     if(side == 0)
         while (xPos < w)
             plot(xPos, yPos, 'o')
@@ -37,23 +55,37 @@ while topNotReached
         end
     end
 
-    if(heightStep*i >= h)
+    if(vStep*i >= h)
         topNotReached = false
         break
     end
 
-
     if(side == 0)
-        %plot([w w], [startHeight+heightStep*i startHeight+heightStep*(i+1)])
-
-        while(xPos >= w && yPos <= heightStep*i)
-
+        k = 1;
+        while(xPos >= w && yPos < vStep*t)
+            R = vStep/2;
+            xPos = R*cos(th(k))+w;
+            yPos = R*sin(th(k))+(vStep*i)/2;
+            plot(xPos,yPos, '*');
+            k = k+1;
         end
-
+        % Change side and update counter
         side = 1
+        i=i+1
     elseif(side == 1)
-        plot([0 0], [startHeight+heightStep*i startHeight+heightStep*(i+1)])
+        k = 1;
+        while(yPos < t*vStep)
+            R = vStep/2;
+            xPos = R*cos(th(k));
+            yPos = R*sin(th(k))+((i)*vStep)/2;
+            plot(-xPos,yPos, '*');
+            k = k+1;
+        end
+        % Change side and update counter
         side = 0
+        i=i+1
     end
+% Update counters
 i=i+1
+t =t+1
 end
