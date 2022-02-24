@@ -4,7 +4,7 @@ topNotReached = true;
 
 % Define frame size
 w = 2350; % width
-h = 10000; % height
+h = 3200; % height
 % Vertical distance between horizontal lines
 vStep = 500;
 
