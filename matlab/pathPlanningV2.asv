@@ -1,27 +1,46 @@
 clc; clear all; close all;
 % Boolean to stop while loop when height is reached
 topNotReached = true;
+
+% Define frame size
+w = 2350; % width
+h = 10000; % height
 % Vertical distance between horizontal lines
 vStep = 500;
-% R
-xStep = 50;
-yStep = 50;
-startHeight = 100;
-w = 2350;
-h = 2000;
-side = 0;
 
-xPos = 0;
-yPos = 0;
+% Resolution/stepping of x and y axis (y for semicircle points)
+xRes = 50;
+yRes = 50;
 
-th = linspace(-pi/2, pi/2, yStep);
+% Define start height and width (not implemented yet)
+startHeight = 0;
+startWidth = 0;
+
+% Set intitial conditions
+side = 0; % 0 = left to right, 1 = right to left
+
+% ### DONT EDIT ANYTHING BELOW ###
+if(side == 0)
+    xPos = 0;
+    yPos = 0;
+elseif(side == 1)
+    xPos = w;
+    yPos = 0;
+end
+
+% Points for semicircle plotting
+th = linspace(-pi/2, pi/2, yRes);
 
 % Initialize counters
 i = 1;
 t = 1;
 
+xC = [];
+yC = [];
+
+% Configure figure settings
 fig = figure
-movegui(fig,[1500 1500]);
+movegui(fig,[1400 1500]);
 hold on
 xlim([-1000 w+1000])
 ylim([-100 h+100])
@@ -30,16 +49,20 @@ while topNotReached
     if(side == 0)
         while (xPos < w)
             plot(xPos, yPos, 'o')
-            xPos=xPos+xStep;
+            xPos=xPos+xRes;
+            xC(end+1) = xPos;
+            yC(end+1) = yPos;
         end
     elseif(side == 1)
         while (xPos > 0)
             plot(xPos, yPos, 'o')
-            xPos=xPos-xStep;
+            xPos=xPos-xRes;
+            xC(end+1) = xPos;
+            yC(end+1) = yPos;
         end
     end
 
-    if(vStep*i >= h)
+    if(vStep*t >= h)
         topNotReached = false
         break
     end
@@ -50,23 +73,38 @@ while topNotReached
             R = vStep/2;
             xPos = R*cos(th(k))+w;
             yPos = R*sin(th(k))+(vStep*i)/2;
-            plot(xPos,yPos, '*');
+            plot(xPos,yPos, '*')
             k = k+1;
+            xC(end+1) = xPos;
+            yC(end+1) = yPos;
         end
-        side = 1
-        i=i+1
+        % Change side and update counter
+        side = 1;
+        i=i+1;
     elseif(side == 1)
         k = 1;
         while(yPos < t*vStep)
             R = vStep/2;
             xPos = R*cos(th(k));
             yPos = R*sin(th(k))+((i)*vStep)/2;
-            plot(-xPos,yPos, '*');
+            plot(-xPos,yPos, '*')
             k = k+1;
+            xC(end+1) = -xPos;
+            yC(end+1) = yPos;
         end
-        side = 0
-        i=i+1
+        % Change side and update counter
+        side = 0;
+        i=i+1;
     end
-i=i+1
-t =t+1
+% Update counters
+i=i+1;
+t =t+1;
 end
+
+% Configure figure settings
+fig2 = figure
+movegui(fig2,[1400+570 1500]);
+hold on
+xlim([-1000 w+1000])
+ylim([-100 h+100])
+plot(xC,yC)
