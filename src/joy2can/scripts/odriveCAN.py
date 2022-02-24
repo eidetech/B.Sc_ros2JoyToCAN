@@ -46,7 +46,8 @@ def main(args=None):
         M1.sp = motorSP.spR
         M1.sendSetpoint(M1.sp, 0, 0)
 
-        print("x: " + str(motorSP.px) + ", M1 SP: " + str(motorSP.pz))
+        print("x: " + str(motorSP.px) + ", z: " + str(motorSP.pz))
+        print("M0: " + str(M0.sp) + ", M1: " + str(M1.sp))
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically

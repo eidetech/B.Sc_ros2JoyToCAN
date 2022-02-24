@@ -1,0 +1,37 @@
+clc; clear all; close all;
+
+topNotReached = true
+resolution = 10
+heightStep = 500
+startHeight = 100
+w = 2350
+h = 1800
+side = 0
+
+i = 0
+
+
+x = linspace(0, w, resolution)
+y = linspace(0, h, resolution)
+figure
+hold on
+xlim([-100 w+100])
+ylim([-100 h+100])
+while topNotReached
+    line([0 w],[startHeight+heightStep*i startHeight])
+    if(side == 0)
+        line([w w], [startHeight startHeight+heightStep*i])
+        side = 1
+    elseif(side == 1)
+        line([0 0], [startHeight+heightStep*i-1 startHeight+heightStep*i])
+        side = 0
+    end
+%line([w 0], [startHeight+heightStep*i startHeight+heightStep*i])
+
+
+if(startHeight+heightStep*i-1 >= h)
+    topNotReached = false
+end
+
+i=i+1
+end
