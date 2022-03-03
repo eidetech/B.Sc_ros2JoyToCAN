@@ -17,6 +17,8 @@ public:
 
     // Kinematic variables and constants
     bool parked = true;
+    bool pathMode = false;
+
     float setpointL = 0;
     float setpointR = 0;
     float px = 0;

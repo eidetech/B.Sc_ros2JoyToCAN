@@ -117,23 +117,24 @@ plot([max(xC),max(xC)],[0,h], 'b')
 % ### Line plot using xC and zC ###
 % Configure figure settings
 fig2 = figure;
-movegui(fig2,[1400+570 1500]);
+movegui(fig2,[1000 1500]);
 hold on
-xlim([-1000 w+1000])
-ylim([-100 h+100])
+
 % Frame box (red)
 plot([0,w],[0,0], 'r')
 plot([0,w],[h,h], 'r')
 plot([0,0],[0,h], 'r')
 plot([w,w],[0,h], 'r')
 
-% Boundry lines (blue)
+xlim([-1000 w+1000])
+ylim([-100 h+100])
 for u = 1:length(xC)
 plot(xC(u), zC(u), '*')
 hold on 
 pause(0.01)
 end
 
+% Boundry lines (blue)
 plot([min(xC),min(xC)],[0,h], 'b')
 plot([max(xC),max(xC)],[0,h], 'b')
 %plot(xC,zC)
