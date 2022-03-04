@@ -6,12 +6,13 @@ import cantools
 
 
 class Motor:
-	def __init__(self, axisID, bus, db):
+	def __init__(self, axisID, bus, db, encoder_cpr):
 		self.axisID = axisID
 		self.axisID_shifted = self.axisID << 5
 		self.bus = bus
 		self.db = db
 		self.sp = 0
+		self.encoder_cpr = encoder_cpr
 
 	def init(self):
 		# Calibration sequence for motors
@@ -20,7 +21,7 @@ class Motor:
 		msg = self.db.get_message_by_name('Set_Axis_State')
 		# Encode message, using format 'Command': ENUM (from odrive.enums)
 		data = msg.encode({'Axis_Requested_State': AXIS_STATE_FULL_CALIBRATION_SEQUENCE})
-		# Update the msg variable to be a CAN message with
+		# Update the msg variable to be a CAN message
 		msg = can.Message(arbitration_id=msg.frame_id | self.axisID_shifted, is_extended_id=False, data=data)
 
 		# Try to send the CAN message to the bus
@@ -155,31 +156,33 @@ class Motor:
 		msg = can.Message(arbitration_id=self.axisID_shifted | SET_INPUT_VEL, data=data, is_extended_id=False)
 		self.bus.send(msg)
 
-	def getEncEstimate(self):
+	def getEstimates(self):
+		"""
+		This function will get the position estimate, velocity estimate from ODrive via CAN bus.
+		It will then calculate the encoder position based on the position estimate.
+
+		:return posEstimate, velEstimate, encEstimate
+
+		"""
 		while True:
 			msg = self.bus.recv()
 			if msg.arbitration_id == (
 					(self.axisID_shifted) | self.db.get_message_by_name('Get_Encoder_Estimates').frame_id):
-				encEstimate = self.db.decode_message('Get_Encoder_Estimates', msg.data)['Pos_Estimate']
+				posEstimate = self.db.decode_message('Get_Encoder_Estimates', msg.data)['Pos_Estimate']
 				velEstimate = self.db.decode_message('Get_Encoder_Estimates', msg.data)['Vel_Estimate']
-				print("Encoder estimate: ", encEstimate)
-				print("Velocity estimate: ", velEstimate)
-				return encEstimate, velEstimate
+				encEstimate = posEstimate*self.encoder_cpr
+				return posEstimate, velEstimate, encEstimate
 
 	def getEncoderCount(self):
-		print("Getting encoder counts...")
 		msg = self.db.get_message_by_name('Get_Encoder_Count')
-		# Encode message, using format 'Command': ENUM (from odrive.enums)
-		data = msg.encode({'Get_Encoder_Count': GET_ENCODER_COUNTS})
-		# Update the msg variable to be a CAN message with
-		msg = can.Message(arbitration_id=msg.frame_id | self.axisID_shifted, is_extended_id=False, data=data)
+		data = [0, 0, 0, 0, 0, 0, 0, 0]
+		msg = can.Message(arbitration_id=msg.frame_id | self.axisID_shifted, is_extended_id=False, data=data, is_remote_frame=True)
 		self.bus.send(msg)
 		while True:
 			msg = self.bus.recv()
-			if msg.arbitration_id == (
-					(self.axisID_shifted) | self.db.get_message_by_name('Get_Encoder_Count').frame_id):
+			if msg.arbitration_id == ((self.axisID_shifted) | self.db.get_message_by_name('Get_Encoder_Count').frame_id):
 				CPR = self.db.decode_message('Get_Encoder_Count', msg.data)['Count_in_CPR']
 				shadowCount = self.db.decode_message('Get_Encoder_Count', msg.data)['Shadow_Count']
-				print("CPR: ", CPR)
-				print("Shadow count: ", shadowCount)
 				return CPR, shadowCount
+
+

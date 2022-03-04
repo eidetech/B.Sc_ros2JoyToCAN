@@ -18,8 +18,8 @@ def main(args=None):
 
 	#bus = can.Bus("vcan0", bustype="virtual")
 	bus = can.Bus("can0", bustype="socketcan")
-	M0 = Motor(0x00, bus, db)
-	M1 = Motor(0x01, bus, db)
+	M0 = Motor(0x00, bus, db, 8192)
+	M1 = Motor(0x01, bus, db, 8192)
 
 	#M0.init() # Do a full calibration sequence
 	#time.sleep(2)
@@ -43,16 +43,17 @@ def main(args=None):
 	def runSinVelocity():
 		t0 = time.monotonic()
 		while True:
-			sinF =math.sin((time.monotonic() - t0))
+			#startTime = time.time()
+			sinF =4*math.sin((time.monotonic() - t0))
 			M0.setVelocity(sinF, 0)
 			M1.setVelocity(sinF, 0)
 
 			#M0.getEncoderCount()
-			M1.getEncoderCount()
-			#print(x*8912)
+			x, y , z = M1.getEstimates()
+			print(z)
 
 			#print("sinF: ", sinF)
-			time.sleep(0.01)
+			#time.sleep(0.01)
 
 	while True:
 		rclpy.spin_once(motorSP)
