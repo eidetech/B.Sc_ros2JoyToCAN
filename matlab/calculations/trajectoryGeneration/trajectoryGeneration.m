@@ -194,7 +194,7 @@ end
 L_wire = 8.800;   % [m] max length of wire on spool
 d = wall_width;   % [m] width between the two pulleys
 R = 0.075;        % [m] radius of the spool
-gear_ratio = 10;  % ratio of the gearbox between motor and pulley
+gear_ratio = 10;  % ratio of the gearbox between motor and spool
 cpr = 8192;       % encoder count per revolution
 
 xA = 0;          % x [m] offset from origo to pulley A
