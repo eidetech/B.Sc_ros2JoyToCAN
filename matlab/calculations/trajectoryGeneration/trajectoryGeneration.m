@@ -40,7 +40,7 @@ totalHeight = 0;
 pt = [
       x_offset + 0, z_offset + 0;
       x_offset + ramp_dist, z_offset + 0;
-      x_offset + wall_width, z_offset + 0;
+      x_offset + wall_width + ramp_dist, z_offset + 0;
 ];
 
 % all paths in-between start and ending path
@@ -51,7 +51,7 @@ while(totalHeight+wall_vStep <= wall_height)
         break
     end
 pt = [pt;      
-      x_offset + wall_width, z_offset + floor*wall_vStep;
+      x_offset + wall_width + ramp_dist, z_offset + floor*wall_vStep;
       x_offset + ramp_dist + 0, z_offset + floor*wall_vStep;
      ]; 
     floor = floor+1;
@@ -61,13 +61,13 @@ pt = [pt;
     end
 pt = [pt;  
       x_offset + ramp_dist, z_offset + floor * wall_vStep;
-      x_offset + wall_width, z_offset + floor * wall_vStep;
+      x_offset + wall_width + ramp_dist, z_offset + floor * wall_vStep;
      ];
 end
 
 % ending path
 pt = [pt;
-      x_offset + wall_width, z_offset + floor * wall_vStep;
+      x_offset + wall_width + ramp_dist, z_offset + floor * wall_vStep;
       x_offset + ramp_dist, z_offset + floor * wall_vStep;  
       x_offset + 0, z_offset + floor * wall_vStep;
 ];
@@ -150,11 +150,11 @@ for i=1:N
         elseif pt(i,1) < pt(i+1, 1) % last kind of trajectories is the straight lines, checking for direction
             v0_x = paint_vel;       % right
             v1_x = paint_vel;
-            t1 = (wall_width-ramp_dist)/paint_vel;      % calculates time based on constant velocity and distance (m//m/s = s)          
+            t1 = (wall_width)/paint_vel;      % calculates time based on constant velocity and distance (m//m/s = s)          
         else
             v0_x = -paint_vel;      % left
             v1_x = -paint_vel;
-            t1 = (wall_width-ramp_dist)/paint_vel;      % calculates time based on constant velocity and distance (m//m/s = s)   
+            t1 = (wall_width)/paint_vel;      % calculates time based on constant velocity and distance (m//m/s = s)   
         end        
     end
     
@@ -469,12 +469,12 @@ if sim
             % LV
             plot([0+x_offset+ramp_dist,0+x_offset+ramp_dist], [0,wall_height], 'r', 'LineWidth', 2)
             % RV
-            plot([x_offset+wall_width,x_offset+wall_width], [0,wall_height], 'r', 'LineWidth', 2)
+            plot([x_offset+wall_width+ramp_dist,x_offset+wall_width+ramp_dist], [0,wall_height], 'r', 'LineWidth', 2)
 
             % BH
-            plot([x_offset+ramp_dist, x_offset+wall_width], [0,0], 'r', 'LineWidth', 2)
+            plot([x_offset+ramp_dist, x_offset+wall_width+ramp_dist], [0,0], 'r', 'LineWidth', 2)
             % TH
-            plot([x_offset+ramp_dist, x_offset+wall_width], [wall_height,wall_height], 'r', 'LineWidth', 2)
+            plot([x_offset+ramp_dist, x_offset+wall_width+ramp_dist], [wall_height,wall_height], 'r', 'LineWidth', 2)
         hold off
 
         text(0,2250,['p_x = ',num2str(round(x_path_pos(i),1))],'Color','red','FontSize',14)
