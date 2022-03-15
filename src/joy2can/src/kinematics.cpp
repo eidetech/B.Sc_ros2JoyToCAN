@@ -12,6 +12,7 @@
 #include "canbus.h"
 #include "kinematicsCalculations.h"
 #include "quintic.h"
+#include "ik.h"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -42,8 +43,13 @@ class Kinematics : public rclcpp::Node
 
 		std_msgs::msg::Float32MultiArray motorVel;
 
+		// Quintic objects for calculating x and z position, velocity and acceleration
 		Quintic qX;
 		Quintic qZ;
+
+		// Inverse kinematics object for converting [x,z] coordinates to [q1,q2] positions and velocities.
+		IK ik;
+
 		float t = 0.;
 
 	private:
@@ -56,8 +62,15 @@ class Kinematics : public rclcpp::Node
 		this->qX.calcQuinticTraj(2,4,t,0,2,0,6,0,7);
 		this->qZ.calcQuinticTraj(2,4,t,0,2,0,6,0,7);
 
-		motorVel.data[0] = this->qX.getVel();
-		motorVel.data[1] = this->qZ.getVel();
+		// Set offsets from origo to pulleys
+		ik.setOffsets(0, 2.0, 2.0, 2.0);
+
+		// Calculate the inverse kinematics based on the quintic trajectory
+		this->ik.calc(qX.getPos(), qZ.getPos(), qX.getVel(), qZ.getVel());
+
+		// Assign the calculated data to the ROS message
+		motorVel.data[0] = this->ik.getAngVel_q1();
+		motorVel.data[1] = this->ik.getAngVel_q2();
 		motorVel.data[2] = this->t;
 
 		// ROS publisher

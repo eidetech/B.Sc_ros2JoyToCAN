@@ -10,6 +10,31 @@ IK::~IK()
 
 }
 
+// Calculate the inverse kinematics [x,z] -> [q1,q2]
+void IK::calc(float x, float z, float x_t, float z_t)
+{
+    float d1_x = x - xA_; // x [m] component of distance vector from origo to pulley A
+    float d1_z = z - zA_; // z [m] component of distance vector from origo to pulley A
+
+    float d2_x = x - xB_; // x [m] component of distance vector from origo to pulley B
+    float d2_z = z - zB_; // z [m] component of distance vector from origo to pulley B  
+
+    float L_1 = sqrt(pow(d1_x,2) + pow(d1_z,2)); // [m] actual length of wire L1 (from pulley A -> TP)
+    float theta_1 = atan2(d1_z,d1_x);           // [rad] angle between horizontal line between pulleys and L1
+    q1_ = (L_wire-L_1)/R;                       // [rad] angular position of motor M1
+
+    // angular velocity of motor M0 [rad/s]
+    q1_t_ = -(z_t + (x_t*cos(theta_1)) / (sin(theta_1))) / (sin(theta_1) + (pow(cos(theta_1),2)) / (sin(theta_1))*R);
+
+    float L_2 = sqrt(pow(d2_x,2) + pow(d2_z,2));   // [m] actual length of wire L2 (from pulley B -> TP)
+    float theta_2 = PI + atan2(d2_z,d2_x); // [rad] angle between horizontal line between pulleys and L2
+    q2_ = (L_wire-L_2)/R;           // [rad] angular position of motor M1
+
+    // angular velocity of motor M1 [rad/s]
+    q2_t_ = -(z_t + (x_t*cos(theta_2)) / (sin(theta_2))) / (sin(theta_2) + (pow(cos(theta_2),2)) / (sin(theta_2))*R);
+}
+
+// Set offsets in x and z direction from origo
 void IK::setOffsets(float xA, float zA, float xB, float zB)
 {
     xA_ = xA;
@@ -18,20 +43,14 @@ void IK::setOffsets(float xA, float zA, float xB, float zB)
     zB_ = zB;
 }
 
-std::vector<float> IK::getOffsetVectors()
-{
-    std::vector<float> offSetVectors;
+// Get the angular position of q1
+float IK::getAngPos_q1(){return q1_;}
 
-    float d1_x = x_path_pos - xA; // x [m] component of distance vector from origo to pulley A
-    float d1_z = z_path_pos - zA; // z [m] component of distance vector from origo to pulley A
+// Get the angular velocity of q1
+float IK::getAngVel_q1(){return q1_t_;}
 
-    float d2_x = x_path_pos - xB; // x [m] component of distance vector from origo to pulley B
-    float d2_z = z_path_pos - zB; // z [m] component of distance vector from origo to pulley B
+// Get the angular position of q2
+float IK::getAngPos_q2(){return q2_;}
 
-    offSetVectors.push_back(d1_x);
-    offSetVectors.push_back(d1_z);
-    offSetVectors.push_back(d2_x);
-    offSetVectors.push_back(d2_z);
-
-    return offSetVectors;
-}
+// Get the angular velocity of q2
+float IK::getAngVel_q2(){return q2_t_;}
