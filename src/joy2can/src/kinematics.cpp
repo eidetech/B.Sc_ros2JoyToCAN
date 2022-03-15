@@ -11,9 +11,12 @@
 
 #include "canbus.h"
 #include "kinematicsCalculations.h"
+#include "quintic.h"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
+
+Quintic q;
 
 class Kinematics : public rclcpp::Node
 {
@@ -30,12 +33,23 @@ class Kinematics : public rclcpp::Node
       // Publisher
       publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("motor_sp", 10);
 
+    q.calcQuinticTraj(2,4,0,0,3,0,6,0,7);
+    std::cout << "x: \n" << q.x << std::endl;
+    std::cout << "p: " << q.getPos() << std::endl;
+    std::cout << "v: " << q.getVel() << std::endl;
+    std::cout << "a: " << q.getAcc() << std::endl;
+
+    q.calcQuinticTraj(4,8,4,3,8,6,10,7,14);
+    std::cout << "x: \n" << q.x << std::endl;
+    std::cout << "p: " << q.getPos() << std::endl;
+    std::cout << "v: " << q.getVel() << std::endl;
+    std::cout << "a: " << q.getAcc() << std::endl;
       RCLCPP_INFO(this->get_logger(), "Publishing to motor_sp topic");
     }
 
     ~Kinematics()
     {
-        delete can;
+        delete can; 
     }
 
   private:
