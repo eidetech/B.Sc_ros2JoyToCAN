@@ -22,6 +22,9 @@ find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
@@ -41,7 +44,7 @@ add_executable(kinematics
 	src/kinematicsCalculations.cpp
 	src/canbus.cpp
 )
-ament_target_dependencies(kinematics rclcpp std_msgs sensor_msgs)
+ament_target_dependencies(kinematics rclcpp std_msgs sensor_msgs Eigen3)
 
 install(TARGETS
   kinematics

@@ -210,14 +210,14 @@ d2_z = z_path_pos - zB; % z [m] component of distance vector from origo to pulle
 
 L_1 = sqrt(d1_x.^2 + d1_z.^2); % [m] actual length of wire L1 (from pulley A -> TP)
 theta_1 = atan2(d1_z,d1_x);    % [rad] angle between horizontal line between pulleys and L1
-q_1 = (L_wire-L_1)./R;          % [rad] angular position of motor M1
+q_1 = (L_wire-L_1)./R;         % [rad] angular position of motor M1
 
 % angular velocity of motor M0 [rad/s]
 q1_t = -(z_path_vel + (x_path_vel.*cos(theta_1)) ./ (sin(theta_1))) ./ (sin(theta_1) + ((cos(theta_1).^2)) ./ (sin(theta_1))*R);
 
 L_2 = sqrt(d2_x.^2 + d2_z.^2);   % [m] actual length of wire L2 (from pulley B -> TP)
 theta_2 = pi + atan2(d2_z,d2_x); % [rad] angle between horizontal line between pulleys and L2
-q_2 = (L_wire-L_2)./R;            % [rad] angular position of motor M1
+q_2 = (L_wire-L_2)./R;           % [rad] angular position of motor M1
 
 % angular velocity of motor M1 [rad/s]
 q2_t = -(z_path_vel + (x_path_vel.*cos(theta_2)) ./ (sin(theta_2))) ./ (sin(theta_2) + ((cos(theta_2).^2)) ./ (sin(theta_2))*R);
