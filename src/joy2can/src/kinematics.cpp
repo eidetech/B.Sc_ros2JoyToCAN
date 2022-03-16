@@ -13,6 +13,7 @@
 #include "kinematicsCalculations.h"
 #include "quintic.h"
 #include "ik.h"
+#include "trajectoryPlanner.h"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -34,6 +35,7 @@ class Kinematics : public rclcpp::Node
 		10ms, std::bind(&Kinematics::timer_callback, this));
 
 		RCLCPP_INFO(this->get_logger(), "Publishing to motor_sp topic");
+
 		}
 
 		~Kinematics()
@@ -50,7 +52,29 @@ class Kinematics : public rclcpp::Node
 		// Inverse kinematics object for converting [x,z] coordinates to [q1,q2] positions and velocities.
 		IK ik;
 
+		// Trajectory planner object
+		TrajectoryPlanner trajPlan;
+
 		float t = 0.;
+		bool printed = false;
+
+		float t0 = 0;
+		float t1 = 0;
+		float t_sum = 0;
+		float x0 = 0;
+		float x1 = 0;
+		float z0 = 0;
+		float z1 = 0;
+		float v0_x = 0;
+		float v1_x = 0;
+		float v0_z = 0;
+		float v1_z = 0;
+		float a0_x = 0;
+		float a1_x = 0;
+		float a0_z = 0;
+		float a1_z = 0;
+		
+		int idx = 0;
 
 	private:
 		void timer_callback()
@@ -58,26 +82,73 @@ class Kinematics : public rclcpp::Node
 		// Resize motorVel array to 3 elements (this could be refactored to not happen every callback)
 		motorVel.data.resize(3);
 
-		// Calculate quintic trajectory for x and z
-		this->qX.calcQuinticTraj(2,4,t,0,2,0,6,0,7);
-		this->qZ.calcQuinticTraj(2,4,t,0,2,0,6,0,7);
-
 		// Set offsets from origo to pulleys
 		ik.setOffsets(0, 2.0, 2.0, 2.0);
 
-		// Calculate the inverse kinematics based on the quintic trajectory
-		this->ik.calc(qX.getPos(), qZ.getPos(), qX.getVel(), qZ.getVel());
+		if(!printed)
+		{
+		trajPlan.plan();
+		trajPlan.printPoints();
+		trajPlan.calcCartesianPosVelAcc();
+		printed = !printed;
+		}
 
-		// Assign the calculated data to the ROS message
-		motorVel.data[0] = this->ik.getAngVel_q1();
-		motorVel.data[1] = this->ik.getAngVel_q2();
-		motorVel.data[2] = this->t;
+		if(idx <= 8)
+		{
+			if (t <= trajPlan.posVelAccTime(idx, 14))
+			{
+			t0 = trajPlan.posVelAccTime(idx,12);
+			t1 = trajPlan.posVelAccTime(idx,13);
 
-		// ROS publisher
-		publisher_->publish(motorVel);
+			x0 = trajPlan.posVelAccTime(idx,0);
+			x1 = trajPlan.posVelAccTime(idx,1);
 
-		// Increase time variable with 10ms (0.01s)
-		this->t += 0.01;
+			z0 = trajPlan.posVelAccTime(idx,2);
+			z1 = trajPlan.posVelAccTime(idx,3);
+
+			v0_x = trajPlan.posVelAccTime(idx,4);
+			v1_x = trajPlan.posVelAccTime(idx,5);
+
+			v0_z = trajPlan.posVelAccTime(idx,6);
+			v1_z = trajPlan.posVelAccTime(idx,7);
+
+			a0_x = trajPlan.posVelAccTime(idx,8);
+			a1_x = trajPlan.posVelAccTime(idx,9);
+
+			a0_z = trajPlan.posVelAccTime(idx,10);
+			a1_z = trajPlan.posVelAccTime(idx,11);
+
+			// Calculate quintic trajectory for x and z
+			this->qX.calcQuinticTraj(t0,t1,t,x0,x1,v0_x,v1_x,a0_x,a1_x);
+			this->qZ.calcQuinticTraj(t0,t1,t,z0,z1,v0_z,v1_z,a0_z,a1_z);
+
+			// this->qX.calcQuinticTraj(0,2,t,0,3,0,6,0,4);
+
+			std::cout << "x: " << qX.getPos() << std::endl;
+
+			// // Calculate the inverse kinematics based on the quintic trajectory
+			this->ik.calc(qX.getPos(), qZ.getPos(), qX.getVel(), qZ.getVel());
+
+			// // Assign the calculated data to the ROS message
+			motorVel.data[0] = qX.getPos();
+			motorVel.data[1] = qZ.getPos();
+			motorVel.data[2] = this->t;
+
+			// //std::cout << "M0: " << motorVel.data[0] << ", M1: " << motorVel.data[1] << ", t: " << motorVel.data[2] << std::endl;
+
+			// ROS publisher
+			publisher_->publish(motorVel);
+
+			// Increase time variable with 10ms (0.01s)
+			this->t += 0.01;
+
+			if(t >= trajPlan.posVelAccTime(idx, 14))
+			{
+				idx++;
+				std::cout << "idx: " << idx << std::endl;
+			}
+		}
+		}
 		}
 
 		void topic_callback(const sensor_msgs::msg::Joy::SharedPtr input)

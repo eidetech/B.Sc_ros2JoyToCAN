@@ -1,4 +1,7 @@
 #include <Eigen/Dense>
+#include <vector>
+#include <iostream>
+#include "quintic.h"
 
 #ifndef TRAJECTORYPLANNER_H
 #define TRAJECTORYPLANNER_H
@@ -15,12 +18,27 @@ public:
     // Destructor
     ~TrajectoryPlanner();
 
-    // Calculate the 
+    // TODO add desc
+    void calcCartesianPosVelAcc();
+
+    // Add all the points in the trajectory to the pt vectors
     void plan();
 
-    // Matrix of [x,z] points to generate paths between
-    ArrayXXf pt;
-    int pt_rows = 2;
+    // Function for adding points to the pt vectors
+    void addPoints(float x, float z);
+
+    // Prints the current list of points
+    void printPoints();
+
+    // Vectors that holds [x,z] points for the path planning
+    std::vector<float> pt_x;
+    std::vector<float> pt_z;
+
+    int pt_len = 9;
+
+    MatrixXf posVelAccTime;
+
+    
 
 private:
 // Trajectory generation parameters
@@ -36,6 +54,23 @@ float z_offset_ = 0.200;    // [m]   offset from (0,0) in z direction
 
 int floor_ = 0;             // [-]   keeps track of the current floor
 float totalHeight_ = 0;     // [m]   keeps track of the total height
+
+// Variables for calculating the cartesian position, velocity and acceleration
+float t0_ = 0;
+float t1_ = 0;
+float t_sum_ = 0;
+float x0_ = 0;
+float x1_ = 0;
+float z0_ = 0;
+float z1_ = 0;
+float v0_x_ = 0;
+float v1_x_ = 0;
+float v0_z_ = 0;
+float v1_z_ = 0;
+float a0_x_ = 0;
+float a1_x_ = 0;
+float a0_z_ = 0;
+float a1_z_ = 0;
 };
 
 #endif

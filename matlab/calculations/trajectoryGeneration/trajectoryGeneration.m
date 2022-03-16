@@ -118,7 +118,7 @@ a0_x = 0;
 a1_x = 0;           % initial and final acceleration along both axis is desired to be 0
 a0_z = 0;
 a1_z = 0;
-
+posVelAccTime = [0 0 0 0 0 0 0 0 0 0 0 0 0 0];
 % loop through each set of points to generate trajectory
 for i=1:N
     
@@ -131,32 +131,34 @@ for i=1:N
     if i == 1               % first trajectory (from stationary) will need zero initial velocity
         v0_x = 0;
         v1_x = paint_vel;
-        t1 = ramp_time;        
+        t1 = ramp_time       
     elseif i >= N           % last trajectory (to stationary) will need zero final velocity
         v0_x = -paint_vel;  % also assumes that robot stops on same side as it started (negative initial velocity)
         v1_x = 0;
-        t1 = ramp_time;        
+        t1 = ramp_time       
     else
         if pt(i,1) == pt(i+1,1) % if both x-points for the path is equal, it is a turn curve
             if pt(i,1) == x_offset+ramp_dist  % right-hand turn
                 v0_x = -paint_vel;
                 v1_x = paint_vel;
-                t1 = turn_time;
+                t1 = turn_time
             else
                 v0_x = paint_vel;              % left-hand turn
                 v1_x = -paint_vel;
-                t1 = turn_time;
+                t1 = turn_time
             end
         elseif pt(i,1) < pt(i+1, 1) % last kind of trajectories is the straight lines, checking for direction
             v0_x = paint_vel;       % right
             v1_x = paint_vel;
-            t1 = (wall_width)/paint_vel;      % calculates time based on constant velocity and distance (m//m/s = s)          
+            t1 = (wall_width)/paint_vel      % calculates time based on constant velocity and distance (m//m/s = s)          
         else
             v0_x = -paint_vel;      % left
             v1_x = -paint_vel;
-            t1 = (wall_width)/paint_vel;      % calculates time based on constant velocity and distance (m//m/s = s)   
+            t1 = (wall_width)/paint_vel      % calculates time based on constant velocity and distance (m//m/s = s)   
         end        
     end
+    
+    posVelAccTime = [posVelAccTime; x0 x1 z0 z1 v0_x v1_x v0_z v1_z a0_x a1_x a0_z a1_z t0 t1];
     
     % generate the fifth order (quintic) polynomials (function in separate file)
     % x = position
@@ -468,7 +470,7 @@ if sim
             %%%%% Red frame for visual feedback on area to be painted %%%%%
             % LV
             plot([0+x_offset+ramp_dist,0+x_offset+ramp_dist], [0,wall_height], 'r', 'LineWidth', 2)
-            % RV
+            % RV    
             plot([x_offset+wall_width+ramp_dist,x_offset+wall_width+ramp_dist], [0,wall_height], 'r', 'LineWidth', 2)
 
             % BH

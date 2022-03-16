@@ -2,7 +2,7 @@ clc; clear; close all;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARAMETERS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-sim = false; % toggle to start/stop playback animations of trajectory
+sim = true; % toggle to start/stop playback animations of trajectory
 
 plot_ik = true; % turn on/off inverse kinematics plots
 plot_fk = true; % turn on/off forward kinematics plots
@@ -19,7 +19,10 @@ x_offset = 0.200;                  % [m]   offset from (0,0) in x direction
 z_offset = 0.200;                  % [m]   offset from (0,0) in z direction
 
 %%%%%%%%%%%%%%%%%%%%% CHECK FOR ERRORS IN VALUES %%%%%%%%%%%%%%%%%%%%%%%%%%
-% Define error messages to appear for the user here (if
+% Define error messages to appear for the user here (if impossible numbers
+% are entered into the parameters above).
+
+% Example:
 % if(ramp_time > 0.20)
 % error('Ramp time to large!')
 % end
@@ -29,9 +32,47 @@ z_offset = 0.200;                  % [m]   offset from (0,0) in z direction
 % Coordinate system: xz (x = horizontal movement, z = vertical movement)
 % pt = [x, z; x, z; ...]
 
+% Initialize floor index and total height of the TP
 floor = 0;
-totalLength = 0;
+totalHeight = 0;
 
+% starting path
+pt = [
+      x_offset + 0, z_offset + 0;
+      x_offset + ramp_dist, z_offset + 0;
+      x_offset + wall_width + ramp_dist, z_offset + 0;
+];
+
+% all paths in-between start and ending path
+while(totalHeight+wall_vStep <= wall_height)
+    floor = floor+1;
+    totalHeight = totalHeight + wall_vStep;
+    if(totalHeight+2*wall_vStep > wall_height)
+        break
+    end
+pt = [pt;      
+      x_offset + wall_width + ramp_dist, z_offset + floor*wall_vStep;
+      x_offset + ramp_dist + 0, z_offset + floor*wall_vStep;
+     ]; 
+    floor = floor+1;
+    totalHeight = totalHeight + wall_vStep;
+    if(totalHeight+2*wall_vStep > wall_height)
+        break
+    end
+pt = [pt;  
+      x_offset + ramp_dist, z_offset + floor * wall_vStep;
+      x_offset + wall_width + ramp_dist, z_offset + floor * wall_vStep;
+     ];
+end
+
+% ending path
+pt = [pt;
+      x_offset + wall_width + ramp_dist, z_offset + floor * wall_vStep;
+      x_offset + ramp_dist, z_offset + floor * wall_vStep;  
+      x_offset + 0, z_offset + floor * wall_vStep;
+];
+
+% Example paths:
 % pt = [
 %         -ramp_dist, 0;
 %         0, 0;
@@ -44,43 +85,6 @@ totalLength = 0;
 %         0, 3*wall_vStep;
 %         -ramp_dist, 3*wall_vStep
 % ];
-
-
-% starting path
-pt = [
-      x_offset + 0, z_offset + 0;
-      x_offset + ramp_dist, z_offset + 0;
-      x_offset + wall_width, z_offset + 0;
-];
-
-% all paths in-between start and ending path
-while(totalLength+wall_vStep <= wall_height)
-    floor = floor+1;
-    totalLength = totalLength + wall_vStep;
-    if(totalLength+2*wall_vStep > wall_height)
-        break
-    end
-pt = [pt;      
-      x_offset + wall_width, z_offset + floor*wall_vStep;
-      x_offset + ramp_dist + 0, z_offset + floor*wall_vStep;
-     ]; 
-    floor = floor+1;
-    totalLength = totalLength + wall_vStep;
-    if(totalLength+2*wall_vStep > wall_height)
-        break
-    end
-pt = [pt;  
-      x_offset + ramp_dist, z_offset + floor * wall_vStep;
-      x_offset + wall_width, z_offset + floor * wall_vStep;
-     ];
-end
-
-% ending path
-pt = [pt;
-      x_offset + wall_width, z_offset + floor * wall_vStep;
-      x_offset + ramp_dist, z_offset + floor * wall_vStep;  
-      x_offset + 0, z_offset + floor * wall_vStep;
-];
 
 % pt = [
 %       % level 1
@@ -100,20 +104,6 @@ pt = [pt;
 %       x_offset + wall_width, z_offset + 3 * wall_vStep;
 %       x_offset + ramp_dist, z_offset + 3 * wall_vStep;  
 %       x_offset + 0, z_offset + 3 * wall_vStep;
-% ];
-
-
-% pt = [
-%         -ramp_dist, 0;
-%         0, 0;
-%         wall_width, 0;
-%         wall_width, wall_vStep;
-%         0, wall_vStep;
-%         0, 2*wall_vStep;
-%         wall_width, 2*wall_vStep;
-%         wall_width, 3*wall_vStep;
-%         0, 3*wall_vStep;
-%         -ramp_dist, 3*wall_vStep
 % ];
 
 %%%%%%%%%%%%%%%%%%%%%%%% TRAJECTORY GENERATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -141,32 +131,35 @@ for i=1:N
     if i == 1               % first trajectory (from stationary) will need zero initial velocity
         v0_x = 0;
         v1_x = paint_vel;
-        t1 = ramp_time;        
+        t1 = ramp_time       
     elseif i >= N           % last trajectory (to stationary) will need zero final velocity
         v0_x = -paint_vel;  % also assumes that robot stops on same side as it started (negative initial velocity)
         v1_x = 0;
-        t1 = ramp_time;        
+        t1 = ramp_time       
     else
         if pt(i,1) == pt(i+1,1) % if both x-points for the path is equal, it is a turn curve
             if pt(i,1) == x_offset+ramp_dist  % right-hand turn
                 v0_x = -paint_vel;
                 v1_x = paint_vel;
-                t1 = turn_time;
+                t1 = turn_time
             else
-                v0_x = paint_vel;               % left-hand turn
+                v0_x = paint_vel;              % left-hand turn
                 v1_x = -paint_vel;
-                t1 = turn_time;
+                t1 = turn_time
             end
         elseif pt(i,1) < pt(i+1, 1) % last kind of trajectories is the straight lines, checking for direction
             v0_x = paint_vel;       % right
             v1_x = paint_vel;
-            t1 = (wall_width-ramp_dist)/paint_vel;      % calculates time based on constant velocity and distance (m//m/s = s)          
+            t1 = (wall_width)/paint_vel      % calculates time based on constant velocity and distance (m//m/s = s)          
         else
             v0_x = -paint_vel;      % left
             v1_x = -paint_vel;
-            t1 = (wall_width-ramp_dist)/paint_vel;      % calculates time based on constant velocity and distance (m//m/s = s)   
+            t1 = (wall_width)/paint_vel      % calculates time based on constant velocity and distance (m//m/s = s)   
         end        
     end
+    
+    posVelAccTime = [0 0 0 0 0 0 0 0 0 0 0 0 0 0];
+    posVelAccTime = [posVelAccTime; x0 x1 z0 z1 v0_x v1_x v0_z v1_z a0_x a1_x a0_z a1_z t0 t1];
     
     % generate the fifth order (quintic) polynomials (function in separate file)
     % x = position
@@ -202,9 +195,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%% INVERSE KINEMATICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 L_wire = 8.800;   % [m] max length of wire on spool
-d = wall_width;   % width between the two pulleys
+d = wall_width;   % [m] width between the two pulleys
 R = 0.075;        % [m] radius of the spool
-gear_ratio = 10;  % ratio of the gearbox between motor and pulley
+gear_ratio = 10;  % ratio of the gearbox between motor and spool
 cpr = 8192;       % encoder count per revolution
 
 xA = 0;          % x [m] offset from origo to pulley A
@@ -220,26 +213,27 @@ d2_z = z_path_pos - zB; % z [m] component of distance vector from origo to pulle
 
 L_1 = sqrt(d1_x.^2 + d1_z.^2); % [m] actual length of wire L1 (from pulley A -> TP)
 theta_1 = atan2(d1_z,d1_x);    % [rad] angle between horizontal line between pulleys and L1
-q_1 = (L_wire-L_1)./R;          % [rad] angular position of motor M1
+q_1 = (L_wire-L_1)./R;         % [rad] angular position of motor M1
 
 % angular velocity of motor M0 [rad/s]
 q1_t = -(z_path_vel + (x_path_vel.*cos(theta_1)) ./ (sin(theta_1))) ./ (sin(theta_1) + ((cos(theta_1).^2)) ./ (sin(theta_1))*R);
 
 L_2 = sqrt(d2_x.^2 + d2_z.^2);   % [m] actual length of wire L2 (from pulley B -> TP)
 theta_2 = pi + atan2(d2_z,d2_x); % [rad] angle between horizontal line between pulleys and L2
-q_2 = (L_wire-L_2)./R;            % [rad] angular position of motor M1
+q_2 = (L_wire-L_2)./R;           % [rad] angular position of motor M1
 
 % angular velocity of motor M1 [rad/s]
 q2_t = -(z_path_vel + (x_path_vel.*cos(theta_2)) ./ (sin(theta_2))) ./ (sin(theta_2) + ((cos(theta_2).^2)) ./ (sin(theta_2))*R);
 
+%%%%%%%%%%%%%%%%%%%%%%%%% INVERSE KINEMATICS PLOT %%%%%%%%%%%%%%%%%%%%%%%%%
 if plot_ik
-figure(3)
+figure(1)
 
 ik_rows = 3;
 ik_columns = 2;
 
-set(3,'Units','Centimeter')
-set(3,'Position',[30 1 25 25]);
+set(1,'Units','Centimeter')
+set(1,'Position',[30 1 25 25]);
 sgtitle('IK plot')
 % cartesian velocity
 subplot(ik_rows, ik_columns, 1)
@@ -306,9 +300,11 @@ q_2_fk = (L_wire-L_2)/R; % [rad]
 q_1_fk_rev = q_1_fk/(2*pi); % [rev]
 q_2_fk_rev = q_2_fk/(2*pi); % [rev]
 
+%%%%%%%%%%%%%%%%%%%%%%%%% FORWARD KINEMATICS PLOT %%%%%%%%%%%%%%%%%%%%%%%%%
 if plot_fk
-figure(10)
-
+figure(2)
+set(2,'Units','Centimeter')
+set(2,'Position',[30 1 25 25]);
 fk_rows = 4;
 fk_columns = 2;
 sgtitle('FK plot')
@@ -364,9 +360,9 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PVA PLOTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if pva_plots
-figure(1)
-set(1,'Units','Centimeter')
-set(1,'Position',[30 1 25 25]);
+figure(3)
+set(3,'Units','Centimeter')
+set(3,'Position',[30 1 25 25]);
 sgtitle('PVA plot')
 rows = 4;
 cols = 2;
@@ -458,9 +454,9 @@ end
 
 if sim
     
-    figure(2)
-    set(2,'Units','Centimeter')
-    set(2,'Position',[100 1 25 25]);
+    figure(4)
+    set(4,'Units','Centimeter')
+    set(4,'Position',[100 1 25 25]);
     xlabel('x [m]')
     ylabel('z [m]')
     
@@ -475,13 +471,13 @@ if sim
             %%%%% Red frame for visual feedback on area to be painted %%%%%
             % LV
             plot([0+x_offset+ramp_dist,0+x_offset+ramp_dist], [0,wall_height], 'r', 'LineWidth', 2)
-            % RV
-            plot([x_offset+wall_width,x_offset+wall_width], [0,wall_height], 'r', 'LineWidth', 2)
+            % RV    
+            plot([x_offset+wall_width+ramp_dist,x_offset+wall_width+ramp_dist], [0,wall_height], 'r', 'LineWidth', 2)
 
             % BH
-            plot([x_offset+ramp_dist, x_offset+wall_width], [0,0], 'r', 'LineWidth', 2)
+            plot([x_offset+ramp_dist, x_offset+wall_width+ramp_dist], [0,0], 'r', 'LineWidth', 2)
             % TH
-            plot([x_offset+ramp_dist, x_offset+wall_width], [wall_height,wall_height], 'r', 'LineWidth', 2)
+            plot([x_offset+ramp_dist, x_offset+wall_width+ramp_dist], [wall_height,wall_height], 'r', 'LineWidth', 2)
         hold off
 
         text(0,2250,['p_x = ',num2str(round(x_path_pos(i),1))],'Color','red','FontSize',14)

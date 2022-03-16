@@ -45,6 +45,7 @@ add_executable(kinematics
 	src/canbus.cpp
 	src/ik.cpp
 	src/quintic.cpp
+	src/trajectoryPlanner.cpp
 )
 ament_target_dependencies(kinematics rclcpp std_msgs sensor_msgs Eigen3)
 
