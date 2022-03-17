@@ -23,6 +23,7 @@ class Kinematics : public rclcpp::Node
 	public:
 		Kinematics(): Node("kinematics"), can(new CANbus)
 		{
+
 		// Subscriber
 		subscription_ = this->create_subscription<sensor_msgs::msg::Joy>(
 		"joy", 10, std::bind(&Kinematics::topic_callback, this, _1));
@@ -35,7 +36,6 @@ class Kinematics : public rclcpp::Node
 		10ms, std::bind(&Kinematics::timer_callback, this));
 
 		RCLCPP_INFO(this->get_logger(), "Publishing to motor_sp topic");
-
 		}
 
 		~Kinematics()
@@ -43,6 +43,7 @@ class Kinematics : public rclcpp::Node
 		delete can; 
 		}
 
+		// ROS message to send motor velocities
 		std_msgs::msg::Float32MultiArray motorVel;
 
 		// Quintic objects for calculating x and z position, velocity and acceleration
@@ -55,9 +56,17 @@ class Kinematics : public rclcpp::Node
 		// Trajectory planner object
 		TrajectoryPlanner trajPlan;
 
+		// Time variable for keeping track of total time in path
 		float t = 0.;
+
+		/* Time variable for keeping track of current time during a path sequence (used for quintic calculations),
+			since the quintic class calculates each path with t0 = 0, and t1 = the time it takes to run that path. */
+		float t_quintic = 0.;
+
+		// Bool used to print vectors and matrices once at the first callback (for debugging)
 		bool printed = false;
 
+		// Variables used for quintic trajectory planning
 		float t0 = 0;
 		float t1 = 0;
 		float t_sum = 0;
@@ -74,6 +83,7 @@ class Kinematics : public rclcpp::Node
 		float a0_z = 0;
 		float a1_z = 0;
 		
+		// Index variable to keep track of which path sequence is running
 		int idx = 0;
 
 	private:
@@ -93,12 +103,14 @@ class Kinematics : public rclcpp::Node
 		printed = !printed;
 		}
 
-		if(idx <= 8)
+		
+		if(idx <= 8) // TODO: This number will have to be updated when the path length changes. Should be dynamic.
 		{
-			if (t <= trajPlan.posVelAccTime(idx, 14))
+			if (t <= trajPlan.posVelAccTime(idx, 14)) // Checks if the current time is less than the total time at the index of the current path sequence
 			{
+			// Assign local variables from posVelAccTime matrix
 			t0 = trajPlan.posVelAccTime(idx,12);
-			t1 = trajPlan.posVelAccTime(idx,13);
+			t1 = trajPlan.posVelAccTime(idx,13); 
 
 			x0 = trajPlan.posVelAccTime(idx,0);
 			x1 = trajPlan.posVelAccTime(idx,1);
@@ -119,35 +131,38 @@ class Kinematics : public rclcpp::Node
 			a1_z = trajPlan.posVelAccTime(idx,11);
 
 			// Calculate quintic trajectory for x and z
-			this->qX.calcQuinticTraj(t0,t1,t,x0,x1,v0_x,v1_x,a0_x,a1_x);
-			this->qZ.calcQuinticTraj(t0,t1,t,z0,z1,v0_z,v1_z,a0_z,a1_z);
+			this->qX.calcQuinticTraj(t0,t1,t_quintic,x0,x1,v0_x,v1_x,a0_x,a1_x);
+			this->qZ.calcQuinticTraj(t0,t1,t_quintic,z0,z1,v0_z,v1_z,a0_z,a1_z);
 
-			// this->qX.calcQuinticTraj(0,2,t,0,3,0,6,0,4);
 
-			std::cout << "x: " << qX.getPos() << std::endl;
-
-			// // Calculate the inverse kinematics based on the quintic trajectory
+			// Calculate the inverse kinematics based on the quintic trajectory
 			this->ik.calc(qX.getPos(), qZ.getPos(), qX.getVel(), qZ.getVel());
 
-			// // Assign the calculated data to the ROS message
-			motorVel.data[0] = qX.getPos();
-			motorVel.data[1] = qZ.getPos();
+			// Assign the calculated data to the ROS message
+			motorVel.data[0] = ik.getAngVel_q1();
+			motorVel.data[1] = ik.getAngVel_q2();
 			motorVel.data[2] = this->t;
 
-			// //std::cout << "M0: " << motorVel.data[0] << ", M1: " << motorVel.data[1] << ", t: " << motorVel.data[2] << std::endl;
+			// Terminal feedback
+			std::cout << "M0: " << motorVel.data[0] << ", M1: " << motorVel.data[1] << ", t: " << motorVel.data[2] << std::endl;
 
 			// ROS publisher
 			publisher_->publish(motorVel);
 
-			// Increase time variable with 10ms (0.01s)
+			// Increase time variables with 10ms (0.01s)
 			this->t += 0.01;
+			this->t_quintic += 0.01;
 
+			// If the current time is greater than the total time up until current sequence, then increase index and reset t_quintic
 			if(t >= trajPlan.posVelAccTime(idx, 14))
 			{
 				idx++;
+				t_quintic = 0;
+
+				// Terminal feedback to know when each sequence starts
 				std::cout << "idx: " << idx << std::endl;
 			}
-		}
+			}
 		}
 		}
 
