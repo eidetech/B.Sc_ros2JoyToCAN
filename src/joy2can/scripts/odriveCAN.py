@@ -57,14 +57,19 @@ def main(args=None):
 
 	while True:
 		rclpy.spin_once(motorSP)
+
+		M0.setVelocity(motorSP.spR, 0)
+		M1.setVelocity(motorSP.spL, 0)
+
+
 		#runSin()
-		M0.sp = motorSP.spL
+		#M0.sp = motorSP.spL
 		#M0.sendSetpoint(M0.sp, 0, 0)
 
-		M1.sp = motorSP.spR
+		#M1.sp = motorSP.spR
 		#M1.sendSetpoint(M1.sp, 0, 0)
 
-		runSinVelocity()
+		#runSinVelocity()
 
 
 		#M0.setVelocity(2, 0)

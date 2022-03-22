@@ -64,7 +64,7 @@ void TrajectoryPlanner::plan()
     }
     
     // Ending path
-    addPoints(x_offset_+ramp_dist_+wall_height_, z_offset_+floor_*wall_vStep_);
+    addPoints(x_offset_+ramp_dist_+wall_width_, z_offset_+floor_*wall_vStep_);
     addPoints(x_offset_+ramp_dist_, z_offset_+floor_*wall_vStep_);
     addPoints(x_offset_, z_offset_+floor_*wall_vStep_);
 }
@@ -150,6 +150,12 @@ void TrajectoryPlanner::calcCartesianPosVelAcc()
     }
 std::cout << posVelAccTime << std::endl;
 
-
-
 }
+
+float TrajectoryPlanner::get_x_offset(){return x_offset_;}
+float TrajectoryPlanner::get_z_offset(){return z_offset_;}
+float TrajectoryPlanner::get_wall_width(){return wall_width_;}
+float TrajectoryPlanner::get_wall_height(){return wall_height_;}
+float TrajectoryPlanner::get_ramp_dist(){return ramp_dist_;}
+float TrajectoryPlanner::get_outer_frame_width(){return outer_frame_width;}
+float TrajectoryPlanner::get_outer_frame_height(){return outer_frame_height;}

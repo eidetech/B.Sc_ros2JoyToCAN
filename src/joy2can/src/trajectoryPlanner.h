@@ -8,6 +8,11 @@
 
 #pragma once
 
+#ifndef PI
+#define PI 3.14159265359
+#endif
+
+
 using namespace Eigen;
 
 class TrajectoryPlanner
@@ -30,6 +35,15 @@ public:
     // Prints the current list of points
     void printPoints();
 
+    // Getters
+    float get_x_offset();
+    float get_z_offset();
+    float get_wall_height();
+    float get_wall_width();
+    float get_ramp_dist();
+    float get_outer_frame_width();
+    float get_outer_frame_height();
+
     // Vectors that holds [x,z] points for the path planning
     std::vector<float> pt_x;
     std::vector<float> pt_z;
@@ -38,19 +52,25 @@ public:
 
     MatrixXf posVelAccTime;
 
-    
-
 private:
 // Trajectory generation parameters
-float paint_vel_ = 1;       // [m/s] desired constant velocity when painting
-float ramp_dist_ = 0.6;     // [m]   distance from stationary to start point
-float ramp_time_ = 1.2;     // [s]   time from ramp_dist to start point
-float turn_time_ = 1;       // [s]   time to turn around to pass wall one level above
-float wall_width_ = 2.000;  // [m]   width of wall
+float paint_vel_ = 0.5;     // [m/s] desired constant velocity when painting
+float ramp_dist_ = 0.3;     // [m]   distance from stationary to start point
+float ramp_time_ = 1;       // [s]   time from ramp_dist to start point
+float turn_time_ = 2;       // [s]   time to turn around to pass wall one level above
+float wall_width_ = 1.500;  // [m]   width of wall
 float wall_height_ = 2.000; // [m]   heigth of wall
 float wall_vStep_ = 0.500;  // [m]   vertical height step (vertical distance between horizontal lines
+
+// float spray_angle_ = 15.*PI/180;     // [rad] 15 deg to rad
+// float dist_to_wall_ = 0.3;    // [m] distance to wall
+// float spray_coverage_z_ = 2*dist_to_wall_*sin(spray_angle_); // spray coverage in z direction
+
+float outer_frame_width = 2.800; // [m] outermost frame width defined by telescopic poles
+float outer_frame_height = 2.625; // [m] outermost frame height defined by telescopic poles
+
 float x_offset_ = 0.200;    // [m]   offset from (0,0) in x direction
-float z_offset_ = 0.200;    // [m]   offset from (0,0) in z direction
+float z_offset_ = 0.400;    // [m]   offset from (0,0) in z direction
 
 int floor_ = 0;             // [-]   keeps track of the current floor
 float totalHeight_ = 0;     // [m]   keeps track of the total height

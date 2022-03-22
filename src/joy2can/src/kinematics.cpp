@@ -90,10 +90,10 @@ class Kinematics : public rclcpp::Node
 		void timer_callback()
 		{
 		// Resize motorVel array to 3 elements (this could be refactored to not happen every callback)
-		motorVel.data.resize(3);
+		motorVel.data.resize(5);
 
 		// Set offsets from origo to pulleys
-		ik.setOffsets(0, 2.0, 2.0, 2.0);
+		ik.setOffsets(0, trajPlan.get_outer_frame_height(), trajPlan.get_outer_frame_width(), trajPlan.get_outer_frame_height());
 
 		if(!printed)
 		{
@@ -134,17 +134,18 @@ class Kinematics : public rclcpp::Node
 			this->qX.calcQuinticTraj(t0,t1,t_quintic,x0,x1,v0_x,v1_x,a0_x,a1_x);
 			this->qZ.calcQuinticTraj(t0,t1,t_quintic,z0,z1,v0_z,v1_z,a0_z,a1_z);
 
-
 			// Calculate the inverse kinematics based on the quintic trajectory
 			this->ik.calc(qX.getPos(), qZ.getPos(), qX.getVel(), qZ.getVel());
 
 			// Assign the calculated data to the ROS message
-			motorVel.data[0] = ik.getAngVel_q1();
-			motorVel.data[1] = ik.getAngVel_q2();
-			motorVel.data[2] = this->t;
+			motorVel.data[0] = ik.getAngVel_q1()/(2*PI)*10; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
+			motorVel.data[1] = ik.getAngVel_q2()/(2*PI)*10; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
+            motorVel.data[2] = qX.getPos();
+            motorVel.data[3] = qZ.getPos();
+			motorVel.data[4] = this->t;
 
 			// Terminal feedback
-			std::cout << "M0: " << motorVel.data[0] << ", M1: " << motorVel.data[1] << ", t: " << motorVel.data[2] << std::endl;
+			std::cout << "x: " << motorVel.data[2] << ", z: " << motorVel.data[3] << ", t: " << motorVel.data[4] << std::endl;
 
 			// ROS publisher
 			publisher_->publish(motorVel);

@@ -20,5 +20,5 @@ class MotorSetpointSub(Node):
 	def listener_callback(self, msg):
 		self.spL = msg.data[1]
 		self.spR = msg.data[0]
-		self.px = msg.data[2]
-		self.pz = msg.data[3]
+		#self.px = msg.data[2]
+		#self.pz = msg.data[3]
