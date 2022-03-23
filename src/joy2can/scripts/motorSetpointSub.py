@@ -10,15 +10,24 @@ class MotorSetpointSub(Node):
 			Float32MultiArray,
 			'motor_sp',
 			self.listener_callback, 10)
-		self.subscription  # prevent unused variable warning
-		self.spL = 0
-		self.spR = 0
-		self.px = 0
-		self.pz = 0
-		self.reset = 0.0;
+		self.angVel_q1 = 0
+		self.angVel_q2 = 0
+		self.angPos_q1 = 0
+		self.angPos_q2 = 0
+
+		self.angPos_q1_initial = 0
+		self.angPos_q2_initial = 0
+		self.firstIteration = True
+
+		self.reset = 0
 
 	def listener_callback(self, msg):
-		self.spL = msg.data[1]
-		self.spR = msg.data[0]
-		#self.px = msg.data[2]
-		#self.pz = msg.data[3]
+		self.angVel_q1 = msg.data[1]
+		self.angVel_q2 = msg.data[0]
+		self.angPos_q1 = msg.data[2]
+		self.angPos_q2 = msg.data[3]
+
+		if(self.firstIteration == True):
+			self.angPos_q1_initial = msg.data[2]
+			self.angPos_q2_initial = msg.data[3]
+			self.firstIteration = False

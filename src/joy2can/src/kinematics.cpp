@@ -66,6 +66,8 @@ class Kinematics : public rclcpp::Node
 		// Bool used to print vectors and matrices once at the first callback (for debugging)
 		bool printed = false;
 
+        bool run = false;
+
 		// Variables used for quintic trajectory planning
 		float t0 = 0;
 		float t1 = 0;
@@ -104,7 +106,7 @@ class Kinematics : public rclcpp::Node
 		}
 
 		
-		if(idx <= 8) // TODO: This number will have to be updated when the path length changes. Should be dynamic.
+		if(idx <= 8 && run) // TODO: This number will have to be updated when the path length changes. Should be dynamic.
 		{
 			if (t <= trajPlan.posVelAccTime(idx, 14)) // Checks if the current time is less than the total time at the index of the current path sequence
 			{
@@ -140,8 +142,8 @@ class Kinematics : public rclcpp::Node
 			// Assign the calculated data to the ROS message
 			motorVel.data[0] = ik.getAngVel_q1()/(2*PI)*10; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
 			motorVel.data[1] = ik.getAngVel_q2()/(2*PI)*10; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
-            motorVel.data[2] = qX.getPos();
-            motorVel.data[3] = qZ.getPos();
+            motorVel.data[2] = ik.getAngPos_q1()/(2*PI)*10;
+            motorVel.data[3] = ik.getAngPos_q2()/(2*PI)*10;
 			motorVel.data[4] = this->t;
 
 			// Terminal feedback
@@ -164,7 +166,9 @@ class Kinematics : public rclcpp::Node
 				std::cout << "idx: " << idx << std::endl;
 			}
 			}
-		}
+		}else{
+            RCLCPP_INFO(this->get_logger(), "\n System parked.");
+        }
 		}
 
 		void topic_callback(const sensor_msgs::msg::Joy::SharedPtr input)
@@ -177,9 +181,10 @@ class Kinematics : public rclcpp::Node
 			if(input->buttons[10] && input->buttons[4])
 			{
 				kinematicsCalc.parked = false;
+                run = true;
 			}
 
-			if(!kinematicsCalc.parked)
+			if(!kinematicsCalc.parked && !run)
 			{
 				if(input->buttons[9] && input->buttons[5])
 				{
@@ -229,7 +234,7 @@ class Kinematics : public rclcpp::Node
 				//can->send_data(can_ps4_output);
 
 			}else{
-				RCLCPP_INFO(this->get_logger(), "\n System parked.");
+				//RCLCPP_INFO(this->get_logger(), "\n System parked.");
 			}
 		}
 		CANbus* can;

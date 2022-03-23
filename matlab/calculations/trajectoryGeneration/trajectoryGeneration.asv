@@ -5,14 +5,14 @@ clc; clear; close all;
 sim = true; % toggle to start/stop playback animations of trajectory
 
 plot_ik = true; % turn on/off inverse kinematics plots
-plot_fk = true; % turn on/off forward kinematics plots
+plot_fk = false; % turn on/off forward kinematics plots
 pva_plots = true; % turn on/off pos, vel, acc plots
 
 paint_vel = 0.5;                            % [m/s] desired constant velocity when painting
 ramp_dist = 0.3;                            % [m]   distance from stationary to start point
 ramp_time = 1;                              % [s]   time from ramp_dist to start point
 turn_time = 2;                              % [s]   time to turn around to pass wall one level above
-wall_width = 1.500;                         % [m]   width of wall
+wall_width = 1.900;                         % [m]   width of wall
 wall_height = 2.000;                        % [m]   heigth of wall
 wall_vStep = 0.500;                         % [m]   vertical height step (vertical distance between horizontal lines
 
@@ -23,8 +23,8 @@ spray_coverage_z = 2*dist_to_waLL*sin(spray_angle); % [m] spray coverage in z di
 outer_frame_width = 2.800;                  % [m] outermost frame width defined by telescopic poles
 outer_frame_height = 2.625;                 % [m] outermost frame height defined by telescopic poles
 
-x_offset = 0.200;                           % [m]   offset from (0,0) in x direction
-z_offset = 0.400;                           % [m]   offset from (0,0) in z direction
+x_offset = 0.150;                           % [m]   offset from (0,0) in x direction
+z_offset = 0.200;                           % [m]   offset from (0,0) in z direction
 
 %%%%%%%%%%%%%%%%%%% POINTS TO GENERATE PATH BETWEEN %%%%%%%%%%%%%%%%%%%%%%%
 
@@ -161,8 +161,6 @@ for i=1:N
     % x = position
     % x_t = velocity
     % x_tt = acceleration
-
-    x1_saver = x1_saver x1;
 
     [x, x_t, x_tt] = Quintic(t0, t1, dt, x0, x1, v0_x, v1_x, a0_x, a1_x);
     [z, z_t, z_tt] = Quintic(t0, t1, dt, z0, z1, v0_z, v1_z, a0_z, a1_z);
@@ -301,6 +299,8 @@ d2_z = -z_path_pos - zB; % z [m] component of distance vector from origo to pull
 L_1 = sqrt(d1_x.^2 + d1_z.^2); % [m] actual length of wire L1 (from pulley A -> TCP)
 theta_1 = atan2(d1_z,d1_x);    % [rad] angle between horizontal line between pulleys and L1
 q_1 = (L_wire-L_1)./R;         % [rad] angular position of motor M1
+%q_1 = q_1/(2*pi);
+
 
 % angular velocity of motor M0 [rad/s]
 q1_t = -(-z_path_vel + (x_path_vel.*cos(theta_1)) ./ (sin(theta_1))) ./ (sin(theta_1) + ((cos(theta_1).^2)) ./ (sin(theta_1)))/R;
@@ -308,14 +308,15 @@ q1_t = -(-z_path_vel + (x_path_vel.*cos(theta_1)) ./ (sin(theta_1))) ./ (sin(the
 L_2 = sqrt(d2_x.^2 + d2_z.^2);   % [m] actual length of wire L2 (from pulley B -> TCP)
 theta_2 = atan2(d2_z,d2_x); % [rad] angle between horizontal line between pulleys and L2
 q_2 = (L_wire-L_2)./R;           % [rad] angular position of motor M1
+%q_2 = q_2/(2*pi);
 
 % angular velocity of motor M1 [rad/s]
 q2_t = -(-z_path_vel + (x_path_vel.*cos(theta_2)) ./ (sin(theta_2))) ./ (sin(theta_2) + ((cos(theta_2).^2)) ./ (sin(theta_2)))/R;
 
 %%%%%%%%%%%%%% INVERSE KINEMATICS (PYTAGOREAN APPROACH) %%%%%%%%%%%%%%%%%%%
 figure(77)
-q1_t_pyt = -((d1_x.^2+d1_z.^2).^(-1/2).*((d1_x.*x_path_vel)+(d1_z.*z_path_vel)))/R;
-q2_t_pyt = -((d2_x.^2+d2_z.^2).^(-1/2).*((d2_x.*x_path_vel)+(d2_z.*z_path_vel)))/R;
+q1_t_pyt = ((d1_x.^2+d1_z.^2).^(-1/2).*((d1_x.*x_path_vel)+(d1_z.*z_path_vel)))/R;
+q2_t_pyt = ((d2_x.^2+d2_z.^2).^(-1/2).*((d2_x.*x_path_vel)+(d2_z.*z_path_vel)))/R;
 plot(t_vect, q1_t_pyt/(2*pi)*10, 'b-')
 hold on
 plot(t_vect, q2_t_pyt/(2*pi)*10, 'r--')
@@ -378,10 +379,10 @@ q1diff = diff(q_1)/dt;
 % angular velocity rev/s * 10 (gear ratio)
 subplot(ik_rows, ik_columns, 5)
 hold on
-    plot(t_vect, q1_t/(2*pi)*10)
-    plot(t_vect, q2_t/(2*pi)*10)
+    %plot(t_vect, q2_t)
     %plot(t_vect, q1d,'b-')
-    %plot(t_vect(1:end-1), q1diff,'rx')
+    plot(t_vect(1:end-1), q1diff,'r')
+    plot(t_vect, q1_t, 'b--')
 hold off
 grid on
 title('q_1 vel')
@@ -399,7 +400,7 @@ ylim([min(q2_t)-0.05 max(q2_t)+0.05])
 
 % angular velocity rev/s
 subplot(ik_rows, ik_columns, 7)
-    plot(t_vect, q1_t/(2*pi))
+    plot(t_vect, q1_t/(2*pi)*10)
 grid on
 title('q_1 vel')
 xlabel('t [s]')
@@ -407,12 +408,12 @@ ylabel("q_1' [rev/s]")
 ylim([min(q1_t)-0.05 max(q1_t)+0.05])
 
 subplot(ik_rows, ik_columns, 8)
-    plot(t_vect, q2_t/(2*pi))
+    plot(t_vect, q2_t/(2*pi)*10)
 grid on
 title('q_2 vel')
 xlabel('t [s]')
 ylabel("q_2' [rev/s]")
-ylim([min(q2_t)-0.05 max(q2_t)+0.05])
+ylim([min(q2_t)/(2*pi)*10-0.05 max(q2_t)/(2*pi)*10])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% FORWARD KINEMATICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -600,9 +601,3 @@ if sim
         pause(0.01)
     end
 end
-
-
-
-
-
-

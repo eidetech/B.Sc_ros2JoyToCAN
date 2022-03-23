@@ -29,10 +29,9 @@ public:
     float getAngPos_q2();
     float getAngVel_q2();
 
-private:
-    float L_wire = 8.800; // [m] total length of wire on spool
-    
-    float R = 0.075; // [m] radius of spool
+private:    
+    float R = 125.5/(2*1000); // [m] radius of spool
+    float L_wire = 19.5*2*PI*R; // [m] total length of wire on spool
     float gear_ratio = 10.0; // ratio of the the gearbox between motor and spool
     float cpr = 8192.0; // encoder counts per revolution
 

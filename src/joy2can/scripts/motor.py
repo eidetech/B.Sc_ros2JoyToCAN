@@ -156,6 +156,12 @@ class Motor:
 		msg = can.Message(arbitration_id=self.axisID_shifted | SET_INPUT_VEL, data=data, is_extended_id=False)
 		self.bus.send(msg)
 
+	def setTorque(self, torque):
+		print("Setting torque to:", torque)
+		data = self.db.encode_message('Set_Input_Torque', {'Input_Torque': torque})
+		msg = can.Message(arbitration_id=self.axisID_shifted | SET_INPUT_VEL, data=data, is_extended_id=False)
+		self.bus.send(msg)
+
 	def getEstimates(self):
 		"""
 		This function will get the position estimate, velocity estimate from ODrive via CAN bus.
