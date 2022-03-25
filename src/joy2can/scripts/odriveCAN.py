@@ -45,7 +45,7 @@ def main(args=None):
 			M0.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_POSITION_CONTROL)
 			M1.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_POSITION_CONTROL)
 			M0.setLimits(4, 10)
-			M1.setLimits(7, 10)
+			M1.setLimits(6, 10)
 			motorSP.lastMode = 1
 		elif(motorSP.mode == 1 and motorSP.lastMode == 1): # Run system in position control mode back to origo (with offsets)
 			M0.sendSetpoint(0, 0, 0)
