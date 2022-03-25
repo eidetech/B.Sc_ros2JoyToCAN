@@ -68,6 +68,8 @@ class Kinematics : public rclcpp::Node
 
         bool run = false;
 
+        int mode = 0;
+
 		// Variables used for quintic trajectory planning
 		float t0 = 0;
 		float t1 = 0;
@@ -92,7 +94,7 @@ class Kinematics : public rclcpp::Node
 		void timer_callback()
 		{
 		// Resize motorVel array to 3 elements (this could be refactored to not happen every callback)
-		motorVel.data.resize(5);
+		motorVel.data.resize(6);
 
 		// Set offsets from origo to pulleys
 		ik.setOffsets(0, trajPlan.get_outer_frame_height(), trajPlan.get_outer_frame_width(), trajPlan.get_outer_frame_height());
@@ -106,7 +108,7 @@ class Kinematics : public rclcpp::Node
 		}
 
 		
-		if(idx <= 8 && run) // TODO: This number will have to be updated when the path length changes. Should be dynamic.
+		if(idx <= trajPlan.pt_len-1 && run) // TODO: This number will have to be updated when the path length changes. Should be dynamic.
 		{
 			if (t <= trajPlan.posVelAccTime(idx, 14)) // Checks if the current time is less than the total time at the index of the current path sequence
 			{
@@ -144,7 +146,8 @@ class Kinematics : public rclcpp::Node
 			motorVel.data[1] = ik.getAngVel_q2()/(2*PI)*10; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
             motorVel.data[2] = ik.getAngPos_q1()/(2*PI)*10;
             motorVel.data[3] = ik.getAngPos_q2()/(2*PI)*10;
-			motorVel.data[4] = this->t;
+            motorVel.data[4] = mode;
+			motorVel.data[5] = this->t;
 
 			// Terminal feedback
 			std::cout << "x: " << motorVel.data[2] << ", z: " << motorVel.data[3] << ", t: " << motorVel.data[4] << std::endl;
@@ -167,7 +170,16 @@ class Kinematics : public rclcpp::Node
 			}
 			}
 		}else{
-            RCLCPP_INFO(this->get_logger(), "\n System parked.");
+            //RCLCPP_INFO(this->get_logger(), "\n System parked.");
+            motorVel.data[0] = 0; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
+			motorVel.data[1] = 0; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
+            motorVel.data[2] = ik.getAngPos_q1()/(2*PI)*10;
+            motorVel.data[3] = ik.getAngPos_q2()/(2*PI)*10;
+            motorVel.data[4] = mode;
+			motorVel.data[5] = this->t;
+
+            // ROS publisher
+            publisher_->publish(motorVel);
         }
 		}
 
@@ -176,6 +188,11 @@ class Kinematics : public rclcpp::Node
 			if(input->buttons[10] == 1.0)
 			{
 				kinematicsCalc.parked = true;
+                idx = 0;
+                run = true;
+                mode = 0;
+                t = 0;
+                t_quintic = 0;
 			}
 
 			if(input->buttons[10] && input->buttons[4])
@@ -184,58 +201,23 @@ class Kinematics : public rclcpp::Node
                 run = true;
 			}
 
-			if(!kinematicsCalc.parked && !run)
-			{
-				if(input->buttons[9] && input->buttons[5])
-				{
-					kinematicsCalc.pathMode = true;
-				}
+            if(idx >= 8 && input->buttons[4] && input->buttons[1])
+            {
+            mode = 1;
+			motorVel.data[0] = 0; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
+			motorVel.data[1] = 0; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
+            motorVel.data[2] = 0;
+            motorVel.data[3] = 0;
+            motorVel.data[4] = mode;
+			motorVel.data[5] = this->t;
 
-				if (input->axes[0] < -0.1 && kinematicsCalc.px < kinematicsCalc.c)
-				{
-					kinematicsCalc.px = kinematicsCalc.px + 10;
-				}else if (input->axes[0] > 0.1 && kinematicsCalc.px > 0)
-				{
-					kinematicsCalc.px = kinematicsCalc.px - 10; 
-				}
-
-				if (input->axes[1] < -0.1)
-				{
-					kinematicsCalc.pz = kinematicsCalc.pz + 10;
-				}else if (input->axes[1] > 0.1 && kinematicsCalc.pz > 0)
-				{   
-					kinematicsCalc.pz = kinematicsCalc.pz - 10;
-				}
-
-				if(input->buttons[0] == 1.0)
-				{
-					kinematicsCalc.px = 0.0;
-					kinematicsCalc.pz = 0.0;
-				}else if (input->buttons[1] == 1.0)
-				{
-					kinematicsCalc.px = 1000;
-					kinematicsCalc.pz = 500;
-				}
-
-				kinematicsCalc.calculate();
-				std_msgs::msg::Float32MultiArray output;
-				output.data.resize(4);
-				output.data[0] = kinematicsCalc.setpointL;
-				output.data[1] = kinematicsCalc.setpointR;
-				output.data[2] = kinematicsCalc.px;
-				output.data[3] = kinematicsCalc.pz;
-
-				//RCLCPP_INFO(this->get_logger(), "\n setpointL: %f", kinematicsCalc.setpointL);
-
-				// ROS publisher
-				publisher_->publish(output);
-
+            // ROS publisher
+            publisher_->publish(motorVel);
+            }
 				// CAN publisher - commented out for now, but keeping it in case it becomes needed
 				//can->send_data(can_ps4_output);
 
-			}else{
-				//RCLCPP_INFO(this->get_logger(), "\n System parked.");
-			}
+
 		}
 		CANbus* can;
 		KinematicsCalculations kinematicsCalc;

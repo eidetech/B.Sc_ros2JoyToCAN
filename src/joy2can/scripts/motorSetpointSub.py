@@ -17,6 +17,13 @@ class MotorSetpointSub(Node):
 
 		self.angPos_q1_initial = 0
 		self.angPos_q2_initial = 0
+		self.angPos_q1_final = 0
+		self.angPos_q2_final = 0
+
+		self.mode = 0
+		self.lastMode = 1
+		self.t = 0
+
 		self.firstIteration = True
 
 		self.reset = 0
@@ -26,6 +33,8 @@ class MotorSetpointSub(Node):
 		self.angVel_q2 = msg.data[1]
 		self.angPos_q1 = msg.data[2]
 		self.angPos_q2 = msg.data[3]
+		self.mode = 	 msg.data[4]
+		self.t = 		 msg.data[5]
 
 		if(self.firstIteration == True):
 			self.angPos_q1_initial = msg.data[2]
