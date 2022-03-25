@@ -13,7 +13,7 @@ def main(args=None):
 	motorSP = MotorSetpointSub()
 
 	# Import database containing can messages (ROS2 environment could not find the file. Put absolute path to avoid error)
-	db = cantools.database.load_file("/home/marcus/github/B.Sc_ros2JoyToCAN/src/joy2can/scripts/odrive-cansimple.dbc")
+	db = cantools.database.load_file("src/joy2can/scripts/odrive-cansimple.dbc")
 
 	#bus = can.Bus("vcan0", bustype="virtual")
 	bus = can.Bus("can0", bustype="socketcan")
