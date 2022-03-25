@@ -12,7 +12,7 @@ paint_vel = 0.5;                            % [m/s] desired constant velocity wh
 ramp_dist = 0.3;                            % [m]   distance from stationary to start point
 ramp_time = 1;                              % [s]   time from ramp_dist to start point
 turn_time = 2;                              % [s]   time to turn around to pass wall one level above
-wall_width = 1.900;                         % [m]   width of wall
+wall_width = 1.500;                         % [m]   width of wall
 wall_height = 2.000;                        % [m]   heigth of wall
 wall_vStep = 0.500;                         % [m]   vertical height step (vertical distance between horizontal lines
 
@@ -283,7 +283,7 @@ end
 
 d = wall_width;               % [m] width between the two pulleys
 R = 125.5/(2*1000);           % [m] radius of the spool (125.5mm diameter spool, divided by 2 to get radius and then converted to [m]
-L_wire = 19.5*2*pi*R;           % [m] max length of wire on spool
+L_wire = 19.5*2*pi*R;         % [m] max length of wire on spool
 
 xA = 0;                       % x [m] offset from origo to pulley A
 zA = outer_frame_height;      % z [m] offset from origo to pulley A
@@ -291,14 +291,15 @@ xB = outer_frame_width;       % x [m] offset from origo to pulley B
 zB = outer_frame_height;      % z [m] offset from origo to pulley B
 
 d1_x = x_path_pos - xA;       % x [m] component of distance vector from origo to pulley A
-d1_z = -(z_path_pos - zA);    % z [m] component of distance vector from origo to pulley A
+d1_z = -z_path_pos + zA;    % z [m] component of distance vector from origo to pulley A
 
 d2_x = x_path_pos - xB;       % x [m] component of distance vector from origo to pulley B
-d2_z = -(z_path_pos - zB);    % z [m] component of distance vector from origo to pulley B
+d2_z = -z_path_pos + zB;    % z [m] component of distance vector from origo to pulley B
 
 L_1 = sqrt(d1_x.^2 + d1_z.^2);% [m] actual length of wire L1 (from pulley A -> TCP)
 theta_1 = atan2(d1_z,d1_x);   % [rad] angle between horizontal line between pulleys and L1
 q_1 = (L_wire-L_1)./R;        % [rad] angular position of motor M1
+
 q_1_rev = q_1/(2*pi)*10;
 
 
@@ -308,6 +309,7 @@ q1_t = -(-z_path_vel + (x_path_vel.*cos(theta_1)) ./ (sin(theta_1))) ./ (sin(the
 L_2 = sqrt(d2_x.^2 + d2_z.^2);   % [m] actual length of wire L2 (from pulley B -> TCP)
 theta_2 = atan2(d2_z,d2_x); % [rad] angle between horizontal line between pulleys and L2
 q_2 = (L_wire-L_2)./R;           % [rad] angular position of motor M1
+
 q_2_rev = q_2/(2*pi)*10;
 
 % angular velocity of motor M1 [rad/s]
@@ -315,8 +317,8 @@ q2_t = -(-z_path_vel + (x_path_vel.*cos(theta_2)) ./ (sin(theta_2))) ./ (sin(the
 
 %%%%%%%%%%%%%% INVERSE KINEMATICS (PYTAGOREAN APPROACH) %%%%%%%%%%%%%%%%%%%
 figure(77)
-q1_t_pyt = -((d1_x.^2+d1_z.^2).^(-1/2).*((d1_x.*x_path_vel)+(d1_z.*-z_path_vel)))/R;
-q2_t_pyt = -((d2_x.^2+d2_z.^2).^(-1/2).*((d2_x.*x_path_vel)+(d2_z.*-z_path_vel)))/R;
+q1_t_pyt = ((d1_x.^2+d1_z.^2).^(-1/2).*((d1_x.*x_path_vel)+(d1_z.*-z_path_vel)))/R;
+q2_t_pyt = ((d2_x.^2+d2_z.^2).^(-1/2).*((d2_x.*x_path_vel)+(d2_z.*-z_path_vel)))/R;
 plot(t_vect, q1_t_pyt/(2*pi)*10, 'b-')
 hold on
 plot(t_vect, q2_t_pyt/(2*pi)*10, 'r--')

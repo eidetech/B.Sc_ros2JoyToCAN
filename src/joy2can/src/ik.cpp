@@ -14,10 +14,10 @@ IK::~IK()
 void IK::calc(float x, float z, float x_t, float z_t)
 {
     float d1_x = x - xA_; // x [m] component of distance vector from origo to pulley A
-    float d1_z = -(z - zA_); // z [m] component of distance vector from origo to pulley A
+    float d1_z = -z + zA_; // z [m] component of distance vector from origo to pulley A
 
     float d2_x = x - xB_; // x [m] component of distance vector from origo to pulley B
-    float d2_z = -(z - zB_); // z [m] component of distance vector from origo to pulley B  
+    float d2_z = -z + zB_; // z [m] component of distance vector from origo to pulley B  
 
     float L_1 = sqrt(pow(d1_x,2) + pow(d1_z,2)); // [m] actual length of wire L1 (from pulley A -> TP)
     float theta_1 = atan2(d1_z,d1_x);            // [rad] angle between horizontal line between pulleys and L1

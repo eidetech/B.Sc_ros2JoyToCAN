@@ -33,8 +33,8 @@ def main(args=None):
 	while True:
 		rclpy.spin_once(motorSP)
 
-		M0.setVelocity(motorSP.angVel_q2, 0)
-		M1.setVelocity(motorSP.angVel_q1, 0)
+		M0.setVelocity(-motorSP.angVel_q2, 0)
+		M1.setVelocity(-motorSP.angVel_q1, 0)
 
 		posEst_M0, velEst_M0, encEst_M0 = M0.getEstimates()
 		posEst_M1, velEst_M1, encEst_M1 = M1.getEstimates()

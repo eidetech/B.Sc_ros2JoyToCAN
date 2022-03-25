@@ -22,8 +22,8 @@ class MotorSetpointSub(Node):
 		self.reset = 0
 
 	def listener_callback(self, msg):
-		self.angVel_q1 = msg.data[1]
-		self.angVel_q2 = msg.data[0]
+		self.angVel_q1 = msg.data[0]
+		self.angVel_q2 = msg.data[1]
 		self.angPos_q1 = msg.data[2]
 		self.angPos_q2 = msg.data[3]
 

@@ -58,7 +58,7 @@ float paint_vel_ = 0.5;     // [m/s] desired constant velocity when painting
 float ramp_dist_ = 0.3;     // [m]   distance from stationary to start point
 float ramp_time_ = 1;       // [s]   time from ramp_dist to start point
 float turn_time_ = 2;       // [s]   time to turn around to pass wall one level above
-float wall_width_ = 1.900;  // [m]   width of wall
+float wall_width_ = 1.500;  // [m]   width of wall
 float wall_height_ = 2.000; // [m]   heigth of wall
 float wall_vStep_ = 0.500;  // [m]   vertical height step (vertical distance between horizontal lines
 
