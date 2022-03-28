@@ -23,6 +23,7 @@ class CANbus
         ~CANbus();
 
         void send_data(float ps4Data[]);
+        void send_spray_status(float sprayStatus);
 
     private:
         int _socket;
@@ -31,6 +32,8 @@ class CANbus
 
         struct can_frame tx_cartCoord;
         struct can_frame rx_cartCoord;
+
+        struct can_frame tx_sprayStatus;
 };
 
 #endif

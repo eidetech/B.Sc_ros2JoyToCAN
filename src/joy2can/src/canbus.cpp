@@ -27,6 +27,9 @@ CANbus::CANbus()
 
     this->rx_cartCoord.can_id = 0x02; // ID of CAN message
     this->rx_cartCoord.can_dlc = 8; // Size of payload
+
+    this->tx_sprayStatus.can_id = 0x1E; // ID of CAN message for sending spray status
+    this->tx_sprayStatus.can_dlc = 8; // Size of payload
 }
 
 
@@ -80,4 +83,14 @@ void CANbus::send_data(float ps4Data[])
     std::cout << y << '\n';
 
     write(this->_socket, &this->tx_cartCoord, sizeof(struct can_frame));
+}
+
+void CANbus::send_spray_status(float sprayStatus)
+{
+    this->tx_sprayStatus.data[0] = (int)sprayStatus;
+    for (int i = 1; i < 8; i++)
+    {
+        this->tx_sprayStatus.data[i] = 0;
+    }
+    write(this->_socket, &this->tx_sprayStatus, sizeof(struct can_frame));
 }

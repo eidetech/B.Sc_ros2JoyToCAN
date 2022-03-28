@@ -86,6 +86,7 @@ class Kinematics : public rclcpp::Node
 		float a1_x = 0;
 		float a0_z = 0;
 		float a1_z = 0;
+        float sprayStatus = 0;
 		
 		// Index variable to keep track of which path sequence is running
 		int idx = 0;
@@ -133,6 +134,8 @@ class Kinematics : public rclcpp::Node
 
 			a0_z = trajPlan.posVelAccTime(idx,10);
 			a1_z = trajPlan.posVelAccTime(idx,11);
+
+            sprayStatus = trajPlan.posVelAccTime(idx, 15);
 
 			// Calculate quintic trajectory for x and z
 			this->qX.calcQuinticTraj(t0,t1,t_quintic,x0,x1,v0_x,v1_x,a0_x,a1_x);
@@ -214,8 +217,9 @@ class Kinematics : public rclcpp::Node
             // ROS publisher
             publisher_->publish(motorVel);
             }
-				// CAN publisher - commented out for now, but keeping it in case it becomes needed
+				// CAN publisher
 				//can->send_data(can_ps4_output);
+                can->send_spray_status(sprayStatus);
 
 
 		}

@@ -1,6 +1,6 @@
 #include "trajectoryPlanner.h"
 
-TrajectoryPlanner::TrajectoryPlanner(): posVelAccTime(pt_len, 15)
+TrajectoryPlanner::TrajectoryPlanner(): posVelAccTime(pt_len, 16)
 {
 
 }
@@ -86,11 +86,13 @@ void TrajectoryPlanner::calcCartesianPosVelAcc()
         v0_x_ = 0;
         v1_x_ = paint_vel_;
         t1_ = ramp_time_;
+        sprayStatus_ = 0;
     }else if(i >= N-1) // Last trajectory (to stationary) will need zero final velocity
     {
         v0_x_ = -paint_vel_; // Also assumes that robot stops on same side as it started (negative initial velocity)
         v1_x_ = 0;
-        t1_ = ramp_time_;       
+        t1_ = ramp_time_;
+        sprayStatus_ = 0;   
     }else
     {
         if(pt_x.at(i) == pt_x.at(i+1)) // If both x-points for the path is equal it is a turn curve
@@ -101,11 +103,13 @@ void TrajectoryPlanner::calcCartesianPosVelAcc()
             v0_x_ = -paint_vel_;
             v1_x_ = paint_vel_;
             t1_ = turn_time_;
+            sprayStatus_ = 0;
         }else                                   // Indicates left turn
         {
             v0_x_ = paint_vel_;
             v1_x_ = -paint_vel_;
             t1_ = turn_time_;
+            sprayStatus_ = 0;
         }
         
         }else if (pt_x.at(i) < pt_x.at(i+1)) // Last kind of trajectory is the straight lines
@@ -114,12 +118,14 @@ void TrajectoryPlanner::calcCartesianPosVelAcc()
             v0_x_ = paint_vel_;
             v1_x_ = paint_vel_;
             t1_ = wall_width_/paint_vel_; // Calculates time based on specified wall width and painting velocity
+            sprayStatus_ = 1;
         }else
         {
             // Right to left movement
             v0_x_ = -paint_vel_;
             v1_x_ = -paint_vel_;
             t1_ = wall_width_/paint_vel_; // Calculates time based on specified wall width and painting velocity
+            sprayStatus_ = 1;
         }
         
     }
@@ -147,6 +153,7 @@ void TrajectoryPlanner::calcCartesianPosVelAcc()
     posVelAccTime(i,12) = t0_;
     posVelAccTime(i,13) = t1_;
     posVelAccTime(i,14) = t_sum_;
+    posVelAccTime(i,15) = sprayStatus_;
     }
 std::cout << posVelAccTime << std::endl;
 

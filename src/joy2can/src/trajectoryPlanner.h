@@ -91,6 +91,7 @@ float a0_x_ = 0;
 float a1_x_ = 0;
 float a0_z_ = 0;
 float a1_z_ = 0;
+float sprayStatus_ = 0;
 };
 
 #endif

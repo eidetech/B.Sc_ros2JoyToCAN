@@ -2,11 +2,11 @@ clc; clear; close all;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARAMETERS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-sim = true; % toggle to start/stop playback animations of trajectory
+sim = false; % toggle to start/stop playback animations of trajectory
 
-plot_ik = true; % turn on/off inverse kinematics plots
+plot_ik = false; % turn on/off inverse kinematics plots
 plot_fk = false; % turn on/off forward kinematics plots
-pva_plots = true; % turn on/off pos, vel, acc plots
+pva_plots = false; % turn on/off pos, vel, acc plots
 
 paint_vel = 0.5;                            % [m/s] desired constant velocity when painting
 ramp_dist = 0.3;                            % [m]   distance from stationary to start point
