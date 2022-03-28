@@ -48,9 +48,8 @@ public:
     std::vector<float> pt_x;
     std::vector<float> pt_z;
 
-    int pt_len = 9;
-
     MatrixXf posVelAccTime;
+    int N = 0;
 
 private:
 // Trajectory generation parameters
@@ -60,7 +59,7 @@ float ramp_time_ = 1;       // [s]   time from ramp_dist to start point
 float turn_time_ = 2;       // [s]   time to turn around to pass wall one level above
 float wall_width_ = 1.500;  // [m]   width of wall
 float wall_height_ = 2.000; // [m]   heigth of wall
-float wall_vStep_ = 0.500;  // [m]   vertical height step (vertical distance between horizontal lines
+float wall_vStep_ = 0.230;  // [m]   vertical height step (vertical distance between horizontal lines
 
 // float spray_angle_ = 15.*PI/180;     // [rad] 15 deg to rad
 // float dist_to_wall_ = 0.3;    // [m] distance to wall

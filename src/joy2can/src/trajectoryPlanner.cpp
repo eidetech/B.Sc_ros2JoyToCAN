@@ -1,6 +1,6 @@
 #include "trajectoryPlanner.h"
 
-TrajectoryPlanner::TrajectoryPlanner(): posVelAccTime(pt_len, 16)
+TrajectoryPlanner::TrajectoryPlanner(): posVelAccTime(1, 16)
 {
 
 }
@@ -72,7 +72,8 @@ void TrajectoryPlanner::plan()
 void TrajectoryPlanner::calcCartesianPosVelAcc()
 {
     
-    int N = pt_x.size()-1;
+    N = pt_x.size()-1;
+    posVelAccTime.resize(N, 16);
 
     for (int i = 0; i < N; i++)
     {

@@ -68,6 +68,7 @@ class Kinematics : public rclcpp::Node
 
         bool run = false;
 
+        // Velocity/position control mode
         int mode = 0;
 
 		// Variables used for quintic trajectory planning
@@ -109,7 +110,7 @@ class Kinematics : public rclcpp::Node
 		}
 
 		
-		if(idx <= trajPlan.pt_len-1 && run) // TODO: This number will have to be updated when the path length changes. Should be dynamic.
+		if(idx <= trajPlan.N-1 && run) // TODO: This number will have to be updated when the path length changes. Should be dynamic.
 		{
 			if (t <= trajPlan.posVelAccTime(idx, 14)) // Checks if the current time is less than the total time at the index of the current path sequence
 			{
@@ -149,7 +150,7 @@ class Kinematics : public rclcpp::Node
 			motorVel.data[1] = ik.getAngVel_q2()/(2*PI)*10; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
             motorVel.data[2] = ik.getAngPos_q1()/(2*PI)*10;
             motorVel.data[3] = ik.getAngPos_q2()/(2*PI)*10;
-            motorVel.data[4] = mode;
+            motorVel.data[4] = mode; // Velocity/position control mode
 			motorVel.data[5] = this->t;
 
 			// Terminal feedback
@@ -217,9 +218,9 @@ class Kinematics : public rclcpp::Node
             // ROS publisher
             publisher_->publish(motorVel);
             }
-				// CAN publisher
-				//can->send_data(can_ps4_output);
-                can->send_spray_status(sprayStatus);
+            // CAN publisher
+            //can->send_data(can_ps4_output);
+            can->send_spray_status(sprayStatus);
 
 
 		}

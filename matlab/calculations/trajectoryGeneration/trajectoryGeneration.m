@@ -2,7 +2,7 @@ clc; clear; close all;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARAMETERS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-sim = false; % toggle to start/stop playback animations of trajectory
+sim = true; % toggle to start/stop playback animations of trajectory
 
 plot_ik = false; % turn on/off inverse kinematics plots
 plot_fk = false; % turn on/off forward kinematics plots
@@ -14,7 +14,7 @@ ramp_time = 1;                              % [s]   time from ramp_dist to start
 turn_time = 2;                              % [s]   time to turn around to pass wall one level above
 wall_width = 1.500;                         % [m]   width of wall
 wall_height = 2.000;                        % [m]   heigth of wall
-wall_vStep = 0.500;                         % [m]   vertical height step (vertical distance between horizontal lines
+wall_vStep = 0.2300;                         % [m]   vertical height step (vertical distance between horizontal lines
 
 spray_angle = 15*pi/180;                           % [rad] 15 deg to rad
 dist_to_waLL = 0.3;                         % [m] distance to wall
