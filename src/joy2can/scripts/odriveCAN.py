@@ -34,8 +34,8 @@ def main(args=None):
 			M1.setLimits(15, 10)
 			motorSP.lastMode = 0
 		elif(motorSP.mode == 0 and motorSP.lastMode == 0): # Run system in velocity control mode
-			M0.setVelocity(-motorSP.angVel_q2, 0)
-			M1.setVelocity(-motorSP.angVel_q1, 0)
+			M0.setVelocity(motorSP.angVel_q2, 0)
+			M1.setVelocity(motorSP.angVel_q1, 0)
 			motorSP.angPos_q1_final = motorSP.angPos_q1
 			motorSP.angPos_q2_final = motorSP.angPos_q2
 			posEst_M1, velEst_M1, encEst_M1 = M1.getEstimates()
