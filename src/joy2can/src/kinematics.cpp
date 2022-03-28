@@ -72,22 +72,22 @@ class Kinematics : public rclcpp::Node
         int mode = 0;
 
 		// Variables used for quintic trajectory planning
-		float t0 = 0;
-		float t1 = 0;
-		float t_sum = 0;
-		float x0 = 0;
-		float x1 = 0;
-		float z0 = 0;
-		float z1 = 0;
-		float v0_x = 0;
-		float v1_x = 0;
-		float v0_z = 0;
-		float v1_z = 0;
-		float a0_x = 0;
-		float a1_x = 0;
-		float a0_z = 0;
-		float a1_z = 0;
-        float sprayStatus = 0;
+		float t0 = 0.;
+		float t1 = 0.;
+		float t_sum = 0.;
+		float x0 = 0.;
+		float x1 = 0.;
+		float z0 = 0.;
+		float z1 = 0.;
+		float v0_x = 0.;
+		float v1_x = 0.;
+		float v0_z = 0.;
+		float v1_z = 0.;
+		float a0_x = 0.;
+		float a1_x = 0.;
+		float a0_z = 0.;
+		float a1_z = 0.;
+        float sprayStatus = 0.;
 		
 		// Index variable to keep track of which path sequence is running
 		int idx = 0;
@@ -108,9 +108,8 @@ class Kinematics : public rclcpp::Node
 		trajPlan.calcCartesianPosVelAcc();
 		printed = !printed;
 		}
-
 		
-		if(idx <= trajPlan.N-1 && run) // TODO: This number will have to be updated when the path length changes. Should be dynamic.
+		if(idx <= trajPlan.N-1 && run)
 		{
 			if (t <= trajPlan.posVelAccTime(idx, 14)) // Checks if the current time is less than the total time at the index of the current path sequence
 			{
@@ -175,8 +174,8 @@ class Kinematics : public rclcpp::Node
 			}
 		}else{
             //RCLCPP_INFO(this->get_logger(), "\n System parked.");
-            motorVel.data[0] = 0; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
-			motorVel.data[1] = 0; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
+            motorVel.data[0] = 0;
+			motorVel.data[1] = 0;
             motorVel.data[2] = ik.getAngPos_q1();
             motorVel.data[3] = ik.getAngPos_q2();
             motorVel.data[4] = mode;
@@ -208,8 +207,8 @@ class Kinematics : public rclcpp::Node
             if(idx >= 8 && input->buttons[4] && input->buttons[1])
             {
             mode = 1;
-			motorVel.data[0] = 0; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
-			motorVel.data[1] = 0; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
+			motorVel.data[0] = 0;
+			motorVel.data[1] = 0;
             motorVel.data[2] = 0;
             motorVel.data[3] = 0;
             motorVel.data[4] = mode;
@@ -220,7 +219,7 @@ class Kinematics : public rclcpp::Node
             }
             // CAN publisher
             //can->send_data(can_ps4_output);
-            can->send_spray_status(sprayStatus);
+            can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
 
 
 		}

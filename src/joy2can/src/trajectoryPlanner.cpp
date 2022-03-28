@@ -165,5 +165,5 @@ float TrajectoryPlanner::get_z_offset(){return z_offset_;}
 float TrajectoryPlanner::get_wall_width(){return wall_width_;}
 float TrajectoryPlanner::get_wall_height(){return wall_height_;}
 float TrajectoryPlanner::get_ramp_dist(){return ramp_dist_;}
-float TrajectoryPlanner::get_outer_frame_width(){return outer_frame_width;}
-float TrajectoryPlanner::get_outer_frame_height(){return outer_frame_height;}
+float TrajectoryPlanner::get_outer_frame_width(){return outer_frame_width_;}
+float TrajectoryPlanner::get_outer_frame_height(){return outer_frame_height_;}

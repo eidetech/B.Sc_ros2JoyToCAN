@@ -65,8 +65,8 @@ float wall_vStep_ = 0.230;  // [m]   vertical height step (vertical distance bet
 // float dist_to_wall_ = 0.3;    // [m] distance to wall
 // float spray_coverage_z_ = 2*dist_to_wall_*sin(spray_angle_); // spray coverage in z direction
 
-float outer_frame_width = 2.800; // [m] outermost frame width defined by telescopic poles
-float outer_frame_height = 2.625; // [m] outermost frame height defined by telescopic poles
+float outer_frame_width_ = 2.800; // [m] outermost frame width defined by telescopic poles
+float outer_frame_height_ = 2.625; // [m] outermost frame height defined by telescopic poles
 
 float x_offset_ = 0.1500;    // [m]   offset from (0,0) in x direction
 float z_offset_ = 0.200;    // [m]   offset from (0,0) in z direction
