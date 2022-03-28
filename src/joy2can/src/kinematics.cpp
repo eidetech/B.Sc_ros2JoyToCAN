@@ -146,10 +146,10 @@ class Kinematics : public rclcpp::Node
 			this->ik.calc(qX.getPos(), qZ.getPos(), qX.getVel(), qZ.getVel());
 
 			// Assign the calculated data to the ROS message
-			motorVel.data[0] = ik.getAngVel_q1()/(2*PI)*10; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
-			motorVel.data[1] = ik.getAngVel_q2()/(2*PI)*10; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
-            motorVel.data[2] = ik.getAngPos_q1()/(2*PI)*10;
-            motorVel.data[3] = ik.getAngPos_q2()/(2*PI)*10;
+			motorVel.data[0] = ik.getAngVel_q1();
+			motorVel.data[1] = ik.getAngVel_q2();
+            motorVel.data[2] = ik.getAngPos_q1();
+            motorVel.data[3] = ik.getAngPos_q2();
             motorVel.data[4] = mode; // Velocity/position control mode
 			motorVel.data[5] = this->t;
 
@@ -177,8 +177,8 @@ class Kinematics : public rclcpp::Node
             //RCLCPP_INFO(this->get_logger(), "\n System parked.");
             motorVel.data[0] = 0; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
 			motorVel.data[1] = 0; // TODO: Get rid of conversion from rad/s to rev/s and gear ratio calculation here. Should be in inverse kinematics.
-            motorVel.data[2] = ik.getAngPos_q1()/(2*PI)*10;
-            motorVel.data[3] = ik.getAngPos_q2()/(2*PI)*10;
+            motorVel.data[2] = ik.getAngPos_q1();
+            motorVel.data[3] = ik.getAngPos_q2();
             motorVel.data[4] = mode;
 			motorVel.data[5] = this->t;
 
