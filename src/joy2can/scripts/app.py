@@ -9,9 +9,10 @@ from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import String
 from std_msgs.msg import Int8
 
-app = Flask(__name__)
-app._static_folder = os.path.abspath("/home/marcus/github/B.Sc_ros2JoyToCAN/install/joy2can/lib/joy2can/templates/static/")
+template_dir = '../../../../src/joy2can/scripts/templates'
+static_dir = '../../../../src/joy2can/scripts/templates/static'
 
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 
 class WebPublisher(Node):
 
