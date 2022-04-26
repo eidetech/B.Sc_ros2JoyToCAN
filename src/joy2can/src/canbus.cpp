@@ -28,7 +28,7 @@ CANbus::CANbus()
     this->rx_cartCoord.can_id = 0x02; // ID of CAN message
     this->rx_cartCoord.can_dlc = 8; // Size of payload
 
-    this->tx_sprayStatus.can_id = 0x1E; // ID of CAN message for sending spray status
+    this->tx_sprayStatus.can_id = 0x40; // ID of CAN message for sending spray status
     this->tx_sprayStatus.can_dlc = 8; // Size of payload
 }
 

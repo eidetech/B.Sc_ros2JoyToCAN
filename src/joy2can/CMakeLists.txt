@@ -74,6 +74,7 @@ install(PROGRAMS
   scripts/motor.py
   scripts/motorSetpointSub.py
   scripts/odrive-cansimple.dbc
+  scripts/app.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

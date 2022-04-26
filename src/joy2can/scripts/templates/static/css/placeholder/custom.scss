@@ -1,0 +1,11 @@
+$theme-colors: (
+    "primary": #E03127,
+    "secondary": #302322
+);
+
+@font-face {
+    font-family: 'altibox';
+    src: url(../font/GTWalsheimPro-Regular.ttf);
+  }
+
+@import "node_modules/bootstrap/scss/bootstrap";
