@@ -4,7 +4,7 @@ clc; clear; close all;
 
 sim = true; % toggle to start/stop playback animations of trajectory
 
-plot_ik = false; % turn on/off inverse kinematics plots
+plot_ik = true; % turn on/off inverse kinematics plots
 plot_fk = false; % turn on/off forward kinematics plots
 pva_plots = false; % turn on/off pos, vel, acc plots
 
@@ -14,7 +14,7 @@ ramp_time = 1;                              % [s]   time from ramp_dist to start
 turn_time = 2;                              % [s]   time to turn around to pass wall one level above
 wall_width = 1.500;                         % [m]   width of wall
 wall_height = 2.000;                        % [m]   heigth of wall
-wall_vStep = 0.2300;                         % [m]   vertical height step (vertical distance between horizontal lines
+wall_vStep = 0.200;                         % [m]   vertical height step (vertical distance between horizontal lines
 
 spray_angle = 15*pi/180;                           % [rad] 15 deg to rad
 dist_to_waLL = 0.3;                         % [m] distance to wall
@@ -35,14 +35,14 @@ z_offset = 0.200;                           % [m]   offset from (0,0) in z direc
 floor = 0;
 totalHeight = 0;
 
-% starting path
+% Starting path
 pt = [
-      x_offset + 0, z_offset + 0;
-      x_offset + ramp_dist, z_offset + 0;
-      x_offset + wall_width + ramp_dist, z_offset + 0;
+      x_offset, z_offset;
+      x_offset + ramp_dist, z_offset;
+      x_offset + wall_width + ramp_dist, z_offset;
 ];
 
-% all paths in-between start and ending path
+% All paths in-between start and ending path
 while(totalHeight+wall_vStep <= wall_height)
     floor = floor+1;
     totalHeight = totalHeight + wall_vStep;
@@ -51,7 +51,7 @@ while(totalHeight+wall_vStep <= wall_height)
     end
 pt = [pt;      
       x_offset + wall_width + ramp_dist, z_offset + floor*wall_vStep;
-      x_offset + ramp_dist + 0, z_offset + floor*wall_vStep;
+      x_offset + ramp_dist, z_offset + floor*wall_vStep;
      ]; 
     floor = floor+1;
     totalHeight = totalHeight + wall_vStep;
@@ -64,11 +64,11 @@ pt = [pt;
      ];
 end
 
-% ending path
+% Ending path
 pt = [pt;
       x_offset + wall_width + ramp_dist, z_offset + floor * wall_vStep;
       x_offset + ramp_dist, z_offset + floor * wall_vStep;  
-      x_offset + 0, z_offset + floor * wall_vStep;
+      x_offset, z_offset + floor * wall_vStep;
 ];
 
 % Example paths:
@@ -189,6 +189,51 @@ for i=1:N
     end
 end
 
+%%%%%%%%%%%%%%%% INVERSE KINEMATICS (TRIG APPROACH) %%%%%%%%%%%%%%%%%%%%%%%
+
+d = wall_width;               % [m] width between the two pulleys
+R = 125.5/(2*1000);           % [m] radius of the spool (125.5mm diameter spool, divided by 2 to get radius and then converted to [m]
+L_wire = 19.5*2*pi*R;         % [m] max length of wire on spool
+
+xA = 0;                       % x [m] offset from origo to pulley A
+zA = outer_frame_height;      % z [m] offset from origo to pulley A
+xB = outer_frame_width;       % x [m] offset from origo to pulley B
+zB = outer_frame_height;      % z [m] offset from origo to pulley B
+
+d1_x = x_path_pos - xA;       % x [m] component of distance vector from origo to pulley A
+d1_z = z_path_pos - zA;       % z [m] component of distance vector from origo to pulley A
+
+d2_x = x_path_pos - xB;       % x [m] component of distance vector from origo to pulley B
+d2_z = z_path_pos - zB;       % z [m] component of distance vector from origo to pulley B
+
+%%%%%%%%%%%%%%%%% M1 %%%%%%%%%%%%%%%%%%
+L_1 = sqrt(d1_x.^2 + d1_z.^2);% [m] actual length of wire L1 (from pulley A -> TCP)
+theta_1 = atan2(d1_z,d1_x);   % [rad] angle between horizontal line between pulleys and L1
+q_1 = -(L_wire-L_1)./R;       % [rad] angular position of motor M1
+
+q_1_rev = q_1/(2*pi)*10;      % [rev] angular position of motor M1
+
+% angular velocity of motor M1 [rad/s]
+q1_t = (z_path_vel + (x_path_vel.*cos(theta_1)) ./ (sin(theta_1))) ./ (sin(theta_1) + ((cos(theta_1).^2)) ./ (sin(theta_1)))/R;
+
+%%%%%%%%%%%%%%%%% M0 %%%%%%%%%%%%%%%%%%
+L_2 = sqrt(d2_x.^2 + d2_z.^2);   % [m] actual length of wire L2 (from pulley B -> TCP)
+theta_2 = atan2(d2_z,d2_x);      % [rad] angle between horizontal line between pulleys and L2
+q_2 = -(L_wire-L_2)./R;          % [rad] angular position of motor M0
+
+q_2_rev = q_2/(2*pi)*10;
+
+% angular velocity of motor M0 [rad/s]
+q2_t = (z_path_vel + (x_path_vel.*cos(theta_2)) ./ (sin(theta_2))) ./ (sin(theta_2) + ((cos(theta_2).^2)) ./ (sin(theta_2)))/R;
+
+%%%%%%%%%%%%%% INVERSE KINEMATICS (PYTAGOREAN APPROACH) %%%%%%%%%%%%%%%%%%%
+%figure(77)
+q1_t_pyt = ((d1_x.^2+d1_z.^2).^(-1/2).*((d1_x.*x_path_vel)+(d1_z.*-z_path_vel)))/R;
+q2_t_pyt = ((d2_x.^2+d2_z.^2).^(-1/2).*((d2_x.*x_path_vel)+(d2_z.*-z_path_vel)))/R;
+%plot(t_vect, q1_t_pyt/(2*pi)*10, 'b-')
+hold on
+%plot(t_vect, q2_t_pyt/(2*pi)*10, 'r--')
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PVA PLOTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if pva_plots
 figure(3)
@@ -279,51 +324,6 @@ hold off
 
 end
 
-%%%%%%%%%%%%%%%% INVERSE KINEMATICS (TRIG APPROACH) %%%%%%%%%%%%%%%%%%%%%%%
-
-d = wall_width;               % [m] width between the two pulleys
-R = 125.5/(2*1000);           % [m] radius of the spool (125.5mm diameter spool, divided by 2 to get radius and then converted to [m]
-L_wire = 19.5*2*pi*R;         % [m] max length of wire on spool
-
-xA = 0;                       % x [m] offset from origo to pulley A
-zA = outer_frame_height;      % z [m] offset from origo to pulley A
-xB = outer_frame_width;       % x [m] offset from origo to pulley B
-zB = outer_frame_height;      % z [m] offset from origo to pulley B
-
-d1_x = x_path_pos - xA;       % x [m] component of distance vector from origo to pulley A
-d1_z = -z_path_pos + zA;    % z [m] component of distance vector from origo to pulley A
-
-d2_x = x_path_pos - xB;       % x [m] component of distance vector from origo to pulley B
-d2_z = -z_path_pos + zB;    % z [m] component of distance vector from origo to pulley B
-
-L_1 = sqrt(d1_x.^2 + d1_z.^2);% [m] actual length of wire L1 (from pulley A -> TCP)
-theta_1 = atan2(d1_z,d1_x);   % [rad] angle between horizontal line between pulleys and L1
-q_1 = (L_wire-L_1)./R;        % [rad] angular position of motor M1
-
-q_1_rev = q_1/(2*pi)*10;
-
-
-% angular velocity of motor M0 [rad/s]
-q1_t = -(-z_path_vel + (x_path_vel.*cos(theta_1)) ./ (sin(theta_1))) ./ (sin(theta_1) + ((cos(theta_1).^2)) ./ (sin(theta_1)))/R;
-
-L_2 = sqrt(d2_x.^2 + d2_z.^2);   % [m] actual length of wire L2 (from pulley B -> TCP)
-theta_2 = atan2(d2_z,d2_x); % [rad] angle between horizontal line between pulleys and L2
-q_2 = (L_wire-L_2)./R;           % [rad] angular position of motor M1
-
-q_2_rev = q_2/(2*pi)*10;
-
-% angular velocity of motor M1 [rad/s]
-q2_t = -(-z_path_vel + (x_path_vel.*cos(theta_2)) ./ (sin(theta_2))) ./ (sin(theta_2) + ((cos(theta_2).^2)) ./ (sin(theta_2)))/R;
-
-%%%%%%%%%%%%%% INVERSE KINEMATICS (PYTAGOREAN APPROACH) %%%%%%%%%%%%%%%%%%%
-figure(77)
-q1_t_pyt = ((d1_x.^2+d1_z.^2).^(-1/2).*((d1_x.*x_path_vel)+(d1_z.*-z_path_vel)))/R;
-q2_t_pyt = ((d2_x.^2+d2_z.^2).^(-1/2).*((d2_x.*x_path_vel)+(d2_z.*-z_path_vel)))/R;
-plot(t_vect, q1_t_pyt/(2*pi)*10, 'b-')
-hold on
-plot(t_vect, q2_t_pyt/(2*pi)*10, 'r--')
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%% INVERSE KINEMATICS PLOT %%%%%%%%%%%%%%%%%%%%%%%%%
 if plot_ik
 figure(1)
@@ -370,11 +370,15 @@ ylim([min(q_2)-0.05 max(q_2)+0.05])
 
 %%%%%%%%%%% NUMERICAL DERIVATIVE FOR POS->VEL VERIFICATION %%%%%%%%%%%%%%%%
 NN = length(q_1);
+
 q1d(1) = (q_1(2) - q_1(1))/dt;
 q1d(2:NN-1) = (q_1(3:NN) - q_1(1:NN-2))/(2*dt);
 q1d(NN) = (q_1(NN) - q_1(NN-1))/dt;
 
+
+
 q1diff = diff(q_1)/dt;
+q2diff = diff(q_2)/dt;
 
 q1_rev_diff = diff(q_1_rev)/dt;
 
@@ -422,7 +426,11 @@ xlabel('t [s]')
 ylabel("q_2' [rev/s]")
 ylim([min(q2_t)/(2*pi)*10-0.05 max(q2_t)/(2*pi)*10+0.05])
 end
-
+figure(100)
+hold on
+plot(t_vect,q1d)
+plot(t_vect,q1_t)
+hold off
 %%%%%%%%%%%%%%%%%%%%%%%%%%% FORWARD KINEMATICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 theta_1_fk = acos((L_1.^2+d.^2-L_2.^2)./(2.*L_1.*d)); % [rad]
 theta_2_fk = acos((L_2.^2+d.^2-L_1.^2)./(2.*L_2.*d)); % [rad]
@@ -574,6 +582,10 @@ if sim
             % Pulley points
             plot(xA, zA, 'bx', 'LineWidth', 2)
             plot(xB, zB, 'bx', 'LineWidth', 2)
+
+            % Cables
+            plot([xA x_path_pos(i)], [zA z_path_pos(i)], 'LineWidth', 2, 'Color', 'k')
+            plot([xB x_path_pos(i)], [zB z_path_pos(i)], 'LineWidth', 2, 'Color', 'k')
 
             th = 0:0.01:2*pi;
             r = 0.1;
