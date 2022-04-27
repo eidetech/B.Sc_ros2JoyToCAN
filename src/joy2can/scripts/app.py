@@ -4,7 +4,7 @@ import os
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int8MultiArray
+
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import String
 from std_msgs.msg import Int8
@@ -18,7 +18,7 @@ class WebPublisher(Node):
 
     def __init__(self):
         super().__init__('web_publisher')
-        self.publisher_ = self.create_publisher(Int8MultiArray, 'web_data', 10)
+        self.publisher_ = self.create_publisher(Float32MultiArray, 'web_data', 10)
         timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.frame_width = 0
@@ -29,15 +29,22 @@ class WebPublisher(Node):
         self.z_offset = 0
         self.percent_overlap = 0
 
+        # 0 = stop_job
+        # 1 = pause_job
+        # 2 = start_job
+        self.job_status = 0
+
     def timer_callback(self):
-        msg = Int8MultiArray()
-        msg.data = [int(self.frame_width),
-                    int(self.frame_height),
-                    int(self.wall_width),
-                    int(self.wall_height),
-                    int(self.x_offset),
-                    int(self.z_offset),
-                    int(self.percent_overlap)]
+        msg = Float32MultiArray()
+
+        msg.data = [float(self.frame_width),
+                    float(self.frame_height),
+                    float(self.wall_width),
+                    float(self.wall_height),
+                    float(self.x_offset),
+                    float(self.z_offset),
+                    float(self.percent_overlap),
+                    float(self.job_status)]
         self.publisher_.publish(msg)
 
 
@@ -72,6 +79,29 @@ if __name__ == '__main__':
                                                  x_offset=wp.x_offset,
                                                  z_offset=wp.z_offset,
                                                  percent_overlap=wp.percent_overlap)
+
+    @app.route('/control')
+    def control():
+            return render_template("control.html", frame_width=wp.frame_width)
+
+    @app.route('/start_job', methods=['POST', 'GET'])
+    def start_job():
+        wp.job_status = 2
+        rclpy.spin_once(wp)
+        return render_template("control.html", job_status=wp.job_status)
+
+    @app.route('/pause_job', methods=['POST', 'GET'])
+    def pause_job():
+        wp.job_status = 1
+        rclpy.spin_once(wp)
+        return render_template("control.html", job_status=wp.job_status)
+
+    @app.route('/stop_job', methods=['POST', 'GET'])
+    def stop_job():
+        wp.job_status = 0
+        rclpy.spin_once(wp)
+        return render_template("control.html", job_status=wp.job_status)
+
 
     app.debug = True
     app.config['EXPLAIN_TEMPLATE_LOADING'] = True
