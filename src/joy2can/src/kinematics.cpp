@@ -24,11 +24,17 @@ class Kinematics : public rclcpp::Node
 		Kinematics(): Node("kinematics"), can(new CANbus)
 		{
 
-		// Subscriber
+		// Joy subscriber
 		subscription_ = this->create_subscription<sensor_msgs::msg::Joy>(
 		"joy", 10, std::bind(&Kinematics::topic_callback, this, _1));
 
 		RCLCPP_INFO(this->get_logger(), "Subscribed to joy topic");
+
+        // Web subscriber
+		subscription_web_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+		"web_data", 10, std::bind(&Kinematics::web_callback, this, _1));
+
+		RCLCPP_INFO(this->get_logger(), "Subscribed to web_data topic");
 
 		// Publisher
 		publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("motor_sp", 10);
@@ -223,11 +229,40 @@ class Kinematics : public rclcpp::Node
 
 
 		}
+
+        void web_callback(const std_msgs::msg::Float32MultiArray::SharedPtr web_data)
+		{
+            // Update all job parameters with data streamed from the web HMI
+            trajPlan.set_outer_frame_width(web_data->data[0]);
+            trajPlan.set_outer_frame_height(web_data->data[1]);
+            trajPlan.set_wall_width(web_data->data[2]);
+            trajPlan.set_wall_height(web_data->data[3]);
+            trajPlan.set_x_offset(web_data->data[4]);
+            trajPlan.set_z_offset(web_data->data[5]);
+            trajPlan.set_vStep(web_data->data[6]);
+            // Debug check
+            // std::cout << "web_data->data[0] = " << web_data->data[0] << ", trajPlan.getget_outer_frame_width() = " << trajPlan.get_outer_frame_width() << std::endl;
+            if ((int)web_data->data[7] == 2) // Start job
+            {
+                run = true;
+            }else if ((int)web_data->data[7] == 1) // Pause job
+            {
+                run = false;
+            }else{ // Stop job
+                idx = 0;
+                t = 0;
+                t_quintic = 0;
+                run = false;
+            }
+            
+            
+        }
 		CANbus* can;
 		KinematicsCalculations kinematicsCalc;
 		rclcpp::TimerBase::SharedPtr timer_;
 		rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr publisher_;
 		rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr subscription_;
+        rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr subscription_web_;
 	};
 
 int main(int argc, char * argv[])
