@@ -57,7 +57,7 @@
 <div class="container">
 
    
-  <h3>Control</h3>
+  <h3>Control Panel</h3>
   {% if job_status == 2 %}
   <div class="alert alert-success m-3" role="alert">
     Starting job.
@@ -72,17 +72,28 @@
   </div>
   {% endif %}
 
-    <form id="parameters_form" action="/start_job" method="POST">
-        <button type="submit" class="btn btn-success btn-lg w-100 p-5 m-3">Start job</button>
-    </form>
+  <div class="row">
+    <div class="col-sm">
+        <form id="parameters_form" action="/start_job" method="POST">
+            <button type="submit" class="btn btn-success btn-lg w-100 p-5 m-3">Start job</button>
+        </form>
+    </div>
+    <div class="col-sm">
+        <form id="parameters_form" action="/pause_job" method="POST">
+            <button type="submit" class="btn btn-warning btn-lg w-100 p-5 m-3">Pause job</button>
+        </form>
+    </div>
+    <div class="col-sm">
+        <form id="parameters_form" action="/stop_job" method="POST">
+            <button type="submit" class="btn btn-danger btn-lg w-100 p-5 m-3">Stop job</button>
+        </form>
+    </div>
 
-    <form id="parameters_form" action="/pause_job" method="POST">
-        <button type="submit" class="btn btn-warning btn-lg w-100 p-5 m-3">Pause job</button>
-    </form>
+    
 
-    <form id="parameters_form" action="/stop_job" method="POST">
-        <button type="submit" class="btn btn-danger btn-lg w-100 p-5 m-3">Stop job</button>
-    </form>
+    
+
+    
 
 
 
