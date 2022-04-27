@@ -72,7 +72,8 @@ if __name__ == '__main__':
             wp.z_offset = request.form['z_offset']
             wp.percent_overlap = request.form['percent_overlap']
             rclpy.spin_once(wp)
-            return render_template("index.html", frame_width=wp.frame_width,
+            return render_template("index.html", job_status= 0,
+                                                 frame_width=wp.frame_width,
                                                  frame_height=wp.frame_height,
                                                  wall_width=wp.wall_width,
                                                  wall_height=wp.wall_height,
