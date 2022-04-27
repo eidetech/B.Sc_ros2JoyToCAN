@@ -44,6 +44,16 @@ public:
     float get_outer_frame_width();
     float get_outer_frame_height();
 
+    // Setters
+    void set_x_offset(float x_offset);
+    void set_z_offset(float z_offset);
+    void set_wall_height(float wall_height);
+    void set_wall_width(float wall_width);
+    void set_ramp_dist(float ramp_dist);
+    void set_outer_frame_width(float outer_frame_width);
+    void set_outer_frame_height(float outer_frame_height);
+    void set_vStep(float wall_vStep);
+
     // Vectors that holds [x,z] points for the path planning
     std::vector<float> pt_x;
     std::vector<float> pt_z;

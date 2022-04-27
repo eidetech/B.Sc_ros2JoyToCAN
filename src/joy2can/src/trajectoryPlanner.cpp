@@ -160,6 +160,7 @@ std::cout << posVelAccTime << std::endl;
 
 }
 
+// Getters
 float TrajectoryPlanner::get_x_offset(){return x_offset_;}
 float TrajectoryPlanner::get_z_offset(){return z_offset_;}
 float TrajectoryPlanner::get_wall_width(){return wall_width_;}
@@ -167,3 +168,12 @@ float TrajectoryPlanner::get_wall_height(){return wall_height_;}
 float TrajectoryPlanner::get_ramp_dist(){return ramp_dist_;}
 float TrajectoryPlanner::get_outer_frame_width(){return outer_frame_width_;}
 float TrajectoryPlanner::get_outer_frame_height(){return outer_frame_height_;}
+
+// Setters
+void TrajectoryPlanner::set_x_offset(float x_offset){x_offset_ = x_offset;}
+void TrajectoryPlanner::set_z_offset(float z_offset){z_offset_ = z_offset;}
+void TrajectoryPlanner::set_wall_width(float wall_width){wall_width_ = wall_width;}
+void TrajectoryPlanner::set_wall_height(float wall_height){wall_height_ = wall_height;}
+void TrajectoryPlanner::set_outer_frame_width(float outer_wall_width){outer_frame_width_ = outer_wall_width;}
+void TrajectoryPlanner::set_outer_frame_height(float outer_wall_height){outer_frame_height_ = outer_wall_height;}
+void TrajectoryPlanner::set_vStep(float wall_vStep){wall_vStep_ = wall_vStep;}
