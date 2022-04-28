@@ -33,8 +33,7 @@ private:
     float R = 125.5/(2*1000);   // [m] radius of spool
     float L_wire = 19.5*2*PI*R; // [m] total length of wire on spool
 
-    // TODO: Update gear_ratio to new winch system
-    float gear_ratio = 10.0;    // ratio of the the gearbox between motor and spool
+    float gear_ratio = 6.0;    // ratio of the the gearbox between motor and spool
     float cpr = 8192.0;         // encoder counts per revolution
 
     float xA_ = 0;

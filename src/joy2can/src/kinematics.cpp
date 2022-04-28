@@ -189,6 +189,10 @@ class Kinematics : public rclcpp::Node
 
             // ROS publisher
             publisher_->publish(motorVel);
+
+            // CAN publisher
+            sprayStatus = 2;
+            can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
         }
 		}
 
