@@ -46,6 +46,11 @@
             <li><a class="dropdown-item" href="#">Factory reset</a></li>
           </ul>
         </li>
+        <li class="nav-item">
+            <form id="parameters_form" action="/git_pull" method="POST">
+                <button type="submit" class="btn btn-danger">git pull</button>
+            </form>
+          </li>
       </ul>
  </nav>
     </div>
@@ -56,6 +61,13 @@
 
 <div class="container">
   <div class="row justify-content-start">
+
+    {% if git_pull_done == True %}
+    <div class="alert alert-success w-100 m-3" role="alert">
+     Latest commit was pulled from GitHub. Currently on <b>{{ hash }}</b>
+    </div>
+    {% endif %}
+
     <div class="col-6">
   <h3>Configure job parameters</h3>
     <form id="parameters_form" action="/update_parameters" method="POST">
@@ -120,13 +132,13 @@
     {% endif %}
 </div>
 
-<label for="percent_overlap" class="form-label">% overlap [%]</label>
+<label for="vertical_step" class="form-label">Vertical Step [m]</label>
 <div class="input-group mb-3">
-    <span class="input-group-text"><img src="/static/bootstrap-icons/percent.svg" width="20" height="20"></span>
+    <span class="input-group-text"><img src="/static/bootstrap-icons/arrows-expand.svg" width="20" height="20"></span>
     {% if z_offset %}
-    <input type="text" id="percent_overlap" name="percent_overlap" class="form-control" placeholder="{{ percent_overlap }}" aria-label="% overlap" aria-describedby="basic-addon1">
+    <input type="text" id="vertical_step" name="vertical_step" class="form-control" placeholder="{{ vertical_step }}" aria-label="Vertical Step" aria-describedby="basic-addon1">
     {% else %}
-    <input type="text" id="percent_overlap" name="percent_overlap" class="form-control" placeholder="% overlap" aria-label="% overlap" aria-describedby="basic-addon1">
+    <input type="text" id="vertical_step" name="vertical_step" class="form-control" placeholder="Vertical Step" aria-label="Vertical Step" aria-describedby="basic-addon1">
     {% endif %}
 </div>
 
@@ -138,11 +150,14 @@
     </div> -->
     <br>
     <input class="btn btn-dark" type="submit" value="Update job parameters">
-    
   </form>
+
+  <form id="parameters_form" action="/load_default_params" method="POST">
+    <button type="submit" class="btn btn-danger mt-3">Load default test parameters</button>
+</form>
     </div>
     <div class="col-6">
-       {% if wall_width and wall_height %}
+       {% if frame_width and frame_height %}
         <h3>Current job parameters</h3>
         <table class="table">
   <thead>
@@ -177,8 +192,8 @@
         <td style="font-weight: normal;">{{ z_offset }}</td>
     </tr>
     <tr>
-        <th style="font-weight: normal;">% overlap [%]</th>
-        <td style="font-weight: normal;">{{ percent_overlap }}</td>
+        <th style="font-weight: normal;">Vertical Step [m]</th>
+        <td style="font-weight: normal;">{{ vertical_step }}</td>
     </tr>
     </tbody>
 </table>

@@ -1,0 +1,13 @@
+{
+  "default":
+    {
+      "frame_width": 2.8,
+      "frame_height": 2.625,
+      "wall_width": 1.5,
+      "wall_height": 2.0,
+      "x_offset": 0.15,
+      "z_offset": 0.2,
+      "vertical_step": 0.230,
+      "job_status": 0
+    }
+}
