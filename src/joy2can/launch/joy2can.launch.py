@@ -22,5 +22,12 @@ def generate_launch_description():
 	    emulate_tty=True,
 	    arguments=[('__log_level:=debug')]
         ),
+        Node(
+            package='joy2can',
+            executable='app.py',
+            output='screen',
+	    emulate_tty=True,
+	    arguments=[('__log_level:=debug')]
+        ),
 
     ])
