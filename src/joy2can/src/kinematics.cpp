@@ -249,6 +249,7 @@ class Kinematics : public rclcpp::Node
             if ((int)web_data->data[7] == 2) // Start job
             {
                 run = true;
+                mode = 0;
             }else if ((int)web_data->data[7] == 1) // Pause job
             {
                 run = false;
