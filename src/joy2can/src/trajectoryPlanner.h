@@ -54,6 +54,9 @@ public:
     void set_outer_frame_height(float outer_frame_height);
     void set_vStep(float wall_vStep);
 
+    // Reset calculation variables
+    void reset();
+
     // Vectors that holds [x,z] points for the path planning
     std::vector<float> pt_x;
     std::vector<float> pt_z;
@@ -67,15 +70,15 @@ float paint_vel_ = 0.5;     // [m/s] desired constant velocity when painting
 float ramp_dist_ = 0.3;     // [m]   distance from stationary to start point
 float ramp_time_ = 1;       // [s]   time from ramp_dist to start point
 float turn_time_ = 2;       // [s]   time to turn around to pass wall one level above
-float wall_width_ = 1.500;  // [m]   width of wall
-float wall_height_ = 2.000; // [m]   heigth of wall
+float wall_width_ = 1.5;  // [m]   width of wall
+float wall_height_ = 2.0; // [m]   heigth of wall
 float wall_vStep_ = 0.230;  // [m]   vertical height step (vertical distance between horizontal lines
 
 // float spray_angle_ = 15.*PI/180;     // [rad] 15 deg to rad
 // float dist_to_wall_ = 0.3;    // [m] distance to wall
 // float spray_coverage_z_ = 2*dist_to_wall_*sin(spray_angle_); // spray coverage in z direction
 
-float outer_frame_width_ = 2.800; // [m] outermost frame width defined by telescopic poles
+float outer_frame_width_ = 2.8; // [m] outermost frame width defined by telescopic poles
 float outer_frame_height_ = 2.625; // [m] outermost frame height defined by telescopic poles
 
 float x_offset_ = 0.1500;    // [m]   offset from (0,0) in x direction

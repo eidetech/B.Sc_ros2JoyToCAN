@@ -30,8 +30,8 @@ def main(args=None):
 			print("Setting control mode to velocity control")
 			M0.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_VELOCITY_CONTROL)
 			M1.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_VELOCITY_CONTROL)
-			M0.setLimits(15, 30)
-			M1.setLimits(15, 30)
+			M0.setLimits(100, 30)
+			M1.setLimits(100, 30)
 			motorSP.lastMode = 0
 		elif(motorSP.mode == 0 and motorSP.lastMode == 0): # Run system in velocity control mode
 			M0.setVelocity(motorSP.angVel_q2, 0)

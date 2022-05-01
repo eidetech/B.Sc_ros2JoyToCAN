@@ -93,7 +93,7 @@ class Kinematics : public rclcpp::Node
 		float a1_x = 0.;
 		float a0_z = 0.;
 		float a1_z = 0.;
-        float sprayStatus = 0.;
+        float sprayStatus = 2.;
 		
 		// Index variable to keep track of which path sequence is running
 		int idx = 0;
@@ -236,6 +236,8 @@ class Kinematics : public rclcpp::Node
 
         void web_callback(const std_msgs::msg::Float32MultiArray::SharedPtr web_data)
 		{
+            std::cout << "Incoming data from web." << std::endl;
+
             // Update all job parameters with data streamed from the web HMI
             trajPlan.set_outer_frame_width(web_data->data[0]);
             trajPlan.set_outer_frame_height(web_data->data[1]);
@@ -244,20 +246,36 @@ class Kinematics : public rclcpp::Node
             trajPlan.set_x_offset(web_data->data[4]);
             trajPlan.set_z_offset(web_data->data[5]);
             trajPlan.set_vStep(web_data->data[6]);
+            
             // Debug check
             // std::cout << "web_data->data[0] = " << web_data->data[0] << ", trajPlan.getget_outer_frame_width() = " << trajPlan.get_outer_frame_width() << std::endl;
             if ((int)web_data->data[7] == 2) // Start job
             {
+                ik.setOffsets(0, trajPlan.get_outer_frame_height(), trajPlan.get_outer_frame_width(), trajPlan.get_outer_frame_height());
+                trajPlan.reset();
+                trajPlan.plan();
+                trajPlan.calcCartesianPosVelAcc();
+
                 run = true;
                 mode = 0;
+                idx = 0;
+                t = 0;
+                t_quintic = 0;
             }else if ((int)web_data->data[7] == 1) // Pause job
             {
                 run = false;
+                // CAN publisher
+                sprayStatus = 2;
+                can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
             }else{ // Stop job
                 idx = 0;
                 t = 0;
                 t_quintic = 0;
                 run = false;
+                mode = 1;
+                // CAN publisher
+                sprayStatus = 2;
+                can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
             }
             
             

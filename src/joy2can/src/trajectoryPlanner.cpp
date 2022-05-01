@@ -177,3 +177,15 @@ void TrajectoryPlanner::set_wall_height(float wall_height){wall_height_ = wall_h
 void TrajectoryPlanner::set_outer_frame_width(float outer_wall_width){outer_frame_width_ = outer_wall_width;}
 void TrajectoryPlanner::set_outer_frame_height(float outer_wall_height){outer_frame_height_ = outer_wall_height;}
 void TrajectoryPlanner::set_vStep(float wall_vStep){wall_vStep_ = wall_vStep;}
+
+// Reset
+void TrajectoryPlanner::reset()
+{
+    N = 0;
+    floor_ = 0;
+    totalHeight_ = 0;
+
+    posVelAccTime = MatrixXf::Zero(1,16);
+    pt_x.clear();
+    pt_z.clear();
+}

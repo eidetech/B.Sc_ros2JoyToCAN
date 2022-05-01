@@ -76,7 +76,7 @@
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/arrow-right-square-fill.svg" width="20" height="20"></span>
     {% if wall_width %}
-    <input type="text" id="frame_width" name="frame_width" class="form-control" placeholder="{{ frame_width }}" aria-label="Frame width" aria-describedby="basic-addon1">
+    <input type="text" id="frame_width" name="frame_width" class="form-control" value="{{ frame_width }}" aria-label="Frame width" aria-describedby="basic-addon1">
     {% else %}
     <input type="text" id="frame_width" name="frame_width" class="form-control" placeholder="Frame width" aria-label="Frame width" aria-describedby="basic-addon1">
     {% endif %}
@@ -86,7 +86,7 @@
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/arrow-up-square-fill.svg" width="20" height="20"></span>
     {% if wall_height %}
-    <input type="text" id="frame_height" name="frame_height" class="form-control" placeholder="{{ frame_height }}" aria-label="Frame height" aria-describedby="basic-addon1">
+    <input type="text" id="frame_height" name="frame_height" class="form-control" value="{{ frame_height }}" aria-label="Frame height" aria-describedby="basic-addon1">
     {% else %}
     <input type="text" id="frame_height" name="frame_height" class="form-control" placeholder="Frame height" aria-label="Frame height" aria-describedby="basic-addon1">
     {% endif %}
@@ -96,7 +96,7 @@
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/arrow-right-square.svg" width="20" height="20"></span>
     {% if wall_height %}
-    <input type="text" id="wall_width" name="wall_width" class="form-control" placeholder="{{ wall_width }}" aria-label="Wall width" aria-describedby="basic-addon1">
+    <input type="text" id="wall_width" name="wall_width" class="form-control" value="{{ wall_width }}" aria-label="Wall width" aria-describedby="basic-addon1">
     {% else %}
     <input type="text" id="wall_width" name="wall_width" class="form-control" placeholder="Wall width" aria-label="Wall width" aria-describedby="basic-addon1">
     {% endif %}
@@ -106,7 +106,7 @@
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/arrow-up-square.svg" width="20" height="20"></span>
     {% if wall_height %}
-    <input type="text" id="wall_height" name="wall_height" class="form-control" placeholder="{{ wall_height }}" aria-label="Wall height" aria-describedby="basic-addon1">
+    <input type="text" id="wall_height" name="wall_height" class="form-control" value="{{ wall_height }}" aria-label="Wall height" aria-describedby="basic-addon1">
     {% else %}
     <input type="text" id="wall_height" name="wall_height" class="form-control" placeholder="Wall height" aria-label="Wall height" aria-describedby="basic-addon1">
     {% endif %}
@@ -116,7 +116,7 @@
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/arrow-bar-right.svg" width="20" height="20"></span>
     {% if x_offset %}
-    <input type="text" id="x_offset" name="x_offset" class="form-control" placeholder="{{ x_offset }}" aria-label="X offset" aria-describedby="basic-addon1">
+    <input type="text" id="x_offset" name="x_offset" class="form-control" value="{{ x_offset }}" aria-label="X offset" aria-describedby="basic-addon1">
     {% else %}
     <input type="text" id="x_offset" name="x_offset" class="form-control" placeholder="X offset" aria-label="X offset" aria-describedby="basic-addon1">
     {% endif %}
@@ -126,7 +126,7 @@
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/arrow-bar-up.svg" width="20" height="20"></span>
     {% if z_offset %}
-    <input type="text" id="z_offset" name="z_offset" class="form-control" placeholder="{{ z_offset }}" aria-label="Z offset" aria-describedby="basic-addon1">
+    <input type="text" id="z_offset" name="z_offset" class="form-control" value="{{ z_offset }}" aria-label="Z offset" aria-describedby="basic-addon1">
     {% else %}
     <input type="text" id="z_offset" name="z_offset" class="form-control" placeholder="Z offset" aria-label="Z offset" aria-describedby="basic-addon1">
     {% endif %}
@@ -136,7 +136,7 @@
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/arrows-expand.svg" width="20" height="20"></span>
     {% if z_offset %}
-    <input type="text" id="vertical_step" name="vertical_step" class="form-control" placeholder="{{ vertical_step }}" aria-label="Vertical Step" aria-describedby="basic-addon1">
+    <input type="text" id="vertical_step" name="vertical_step" class="form-control" value="{{ vertical_step }}" aria-label="Vertical Step" aria-describedby="basic-addon1">
     {% else %}
     <input type="text" id="vertical_step" name="vertical_step" class="form-control" placeholder="Vertical Step" aria-label="Vertical Step" aria-describedby="basic-addon1">
     {% endif %}
@@ -155,6 +155,11 @@
   <form id="parameters_form" action="/load_default_params" method="POST">
     <button type="submit" class="btn btn-danger mt-3">Load default test parameters</button>
 </form>
+
+<form id="parameters_form" action="/home" method="POST">
+    <button type="submit" class="btn btn-danger mt-3">Home machine</button>
+</form>
+
     </div>
     <div class="col-6">
        {% if frame_width and frame_height %}
