@@ -65,8 +65,8 @@ class Kinematics : public rclcpp::Node
 		// Time variable for keeping track of total time in path
 		float t = 0.;
 
-		/* Time variable for keeping track of current time during a path sequence (used for quintic calculations),
-			since the quintic class calculates each path with t0 = 0, and t1 = the time it takes to run that path. */
+		// Time variable for keeping track of current time during a path sequence (used for quintic calculations),
+		// since the quintic class calculates each path with t0 = 0, and t1 = the time it takes to run that path.
 		float t_quintic = 0.;
 
 		// Bool used to print vectors and matrices once at the first callback (for debugging)
@@ -75,6 +75,8 @@ class Kinematics : public rclcpp::Node
         bool run = false;
 
         // Velocity/position control mode
+        // 0 = velocity control
+        // 1 = position control
         int mode = 0;
 
 		// Variables used for quintic trajectory planning
@@ -198,20 +200,32 @@ class Kinematics : public rclcpp::Node
 
 		void topic_callback(const sensor_msgs::msg::Joy::SharedPtr input)
 		{
-			if(input->buttons[10] == 1.0)
-			{
-				kinematicsCalc.parked = true;
-                idx = 0;
-                run = true;
-                mode = 0;
-                t = 0;
-                t_quintic = 0;
-			}
+			// if(input->buttons[10] == 1.0)
+			// {
+            //     ik.setOffsets(0, trajPlan.get_outer_frame_height(), trajPlan.get_outer_frame_width(), trajPlan.get_outer_frame_height());
+            //     trajPlan.reset();
+            //     trajPlan.plan();
+            //     trajPlan.calcCartesianPosVelAcc();
+
+            //     run = true;
+            //     mode = 0;
+            //     idx = 0;
+            //     t = 0;
+            //     t_quintic = 0;
+			// }
 
 			if(input->buttons[10] && input->buttons[4])
 			{
-				kinematicsCalc.parked = false;
+                ik.setOffsets(0, trajPlan.get_outer_frame_height(), trajPlan.get_outer_frame_width(), trajPlan.get_outer_frame_height());
+                trajPlan.reset();
+                trajPlan.plan();
+                trajPlan.calcCartesianPosVelAcc();
+
                 run = true;
+                mode = 0;
+                idx = 0;
+                t = 0;
+                t_quintic = 0;
 			}
 
             if(idx >= 8 && input->buttons[4] && input->buttons[1])
@@ -236,7 +250,7 @@ class Kinematics : public rclcpp::Node
 
         void web_callback(const std_msgs::msg::Float32MultiArray::SharedPtr web_data)
 		{
-            std::cout << "Incoming data from web." << std::endl;
+            //std::cout << "Incoming data from web." << std::endl;
 
             // Update all job parameters with data streamed from the web HMI
             trajPlan.set_outer_frame_width(web_data->data[0]);
