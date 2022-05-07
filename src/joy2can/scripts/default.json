@@ -7,7 +7,7 @@
       "wall_height": 1.5,
       "x_offset": 0.6,
       "z_offset": 0.4,
-      "vertical_step": 0.230,
+      "percent_overlap": 30,
       "job_status": 0
     }
 }

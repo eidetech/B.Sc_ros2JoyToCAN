@@ -123,7 +123,7 @@
     {% endif %}
 </div>
 
-<label for="x_offset" class="form-label">X offset [m]</label>
+<label for="x_offset" class="form-label">X Offset [m]</label>
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/arrow-bar-right.svg" width="20" height="20"></span>
     {% if x_offset %}
@@ -133,7 +133,7 @@
     {% endif %}
 </div>
 
-<label for="z_offset" class="form-label">Z offset [m]</label>
+<label for="z_offset" class="form-label">Z Offset [m]</label>
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/arrow-bar-up.svg" width="20" height="20"></span>
     {% if z_offset %}
@@ -143,13 +143,13 @@
     {% endif %}
 </div>
 
-<label for="vertical_step" class="form-label">Vertical Step [m]</label>
+<label for="percent_overlap" class="form-label">Percent Overlap [%]</label>
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/arrows-expand.svg" width="20" height="20"></span>
-    {% if z_offset %}
-    <input type="text" id="vertical_step" name="vertical_step" class="form-control" value="{{ vertical_step }}" aria-label="Vertical Step" aria-describedby="basic-addon1">
+    {% if percent_overlap %}
+    <input type="text" id="percent_overlap" name="percent_overlap" class="form-control" value="{{ percent_overlap }}" aria-label="Percent overlap" aria-describedby="basic-addon1">
     {% else %}
-    <input type="text" id="vertical_step" name="vertical_step" class="form-control" placeholder="Vertical Step" aria-label="Vertical Step" aria-describedby="basic-addon1">
+    <input type="text" id="percent_overlap" name="percent_overlap" class="form-control" placeholder="Percent overlap" aria-label="Percent overlap" aria-describedby="basic-addon1">
     {% endif %}
 </div>
 
@@ -208,8 +208,8 @@
         <td style="font-weight: normal;">{{ z_offset }}</td>
     </tr>
     <tr>
-        <th style="font-weight: normal;">Vertical Step [m]</th>
-        <td style="font-weight: normal;">{{ vertical_step }}</td>
+        <th style="font-weight: normal;">Percent overlap [%]</th>
+        <td style="font-weight: normal;">{{ percent_overlap }}</td>
     </tr>
     </tbody>
 </table>

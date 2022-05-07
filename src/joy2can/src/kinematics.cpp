@@ -25,8 +25,8 @@ class Kinematics : public rclcpp::Node
 		{
 
 		// Joy subscriber
-		subscription_ = this->create_subscription<sensor_msgs::msg::Joy>(
-		"joy", 10, std::bind(&Kinematics::topic_callback, this, _1));
+		subscription_joy_ = this->create_subscription<sensor_msgs::msg::Joy>(
+		"joy", 10, std::bind(&Kinematics::joy_callback, this, _1));
 
 		RCLCPP_INFO(this->get_logger(), "Subscribed to joy topic");
 
@@ -69,6 +69,8 @@ class Kinematics : public rclcpp::Node
 		// since the quintic class calculates each path with t0 = 0, and t1 = the time it takes to run that path.
 		float t_quintic = 0.;
 
+        float t_total = 0.;
+
 		// Bool used to print vectors and matrices once at the first callback (for debugging)
 		bool printed = false;
 
@@ -104,7 +106,7 @@ class Kinematics : public rclcpp::Node
 		void timer_callback()
 		{
 		// Resize motorVel array to 3 elements (this could be refactored to not happen every callback)
-		motorVel.data.resize(6);
+		motorVel.data.resize(7);
 
 		// Set offsets from origo to pulleys
 		ik.setOffsets(0, trajPlan.get_outer_frame_height(), trajPlan.get_outer_frame_width(), trajPlan.get_outer_frame_height());
@@ -143,6 +145,8 @@ class Kinematics : public rclcpp::Node
 			a0_z = trajPlan.posVelAccTime(idx,10);
 			a1_z = trajPlan.posVelAccTime(idx,11);
 
+            t_total = trajPlan.posVelAccTime(trajPlan.N-1,14);
+
             sprayStatus = trajPlan.posVelAccTime(idx, 15);
 
 			// Calculate quintic trajectory for x and z
@@ -159,9 +163,10 @@ class Kinematics : public rclcpp::Node
             motorVel.data[3] = ik.getAngPos_q2();
             motorVel.data[4] = mode; // Velocity/position control mode
 			motorVel.data[5] = this->t;
+            motorVel.data[6] = this->t_total;
 
 			// Terminal feedback
-			std::cout << "x: " << motorVel.data[2] << ", z: " << motorVel.data[3] << ", t: " << motorVel.data[4] << std::endl;
+			std::cout << "x: " << motorVel.data[2] << ", z: " << motorVel.data[3] << ", t: " << motorVel.data[5] << std::endl;
 
 			// ROS publisher
 			publisher_->publish(motorVel);
@@ -198,7 +203,7 @@ class Kinematics : public rclcpp::Node
         }
 		}
 
-		void topic_callback(const sensor_msgs::msg::Joy::SharedPtr input)
+		void joy_callback(const sensor_msgs::msg::Joy::SharedPtr input)
 		{
 			// if(input->buttons[10] == 1.0)
 			// {
@@ -259,7 +264,8 @@ class Kinematics : public rclcpp::Node
             trajPlan.set_wall_height(web_data->data[3]);
             trajPlan.set_x_offset(web_data->data[4]);
             trajPlan.set_z_offset(web_data->data[5]);
-            trajPlan.set_vStep(web_data->data[6]);
+            trajPlan.calc_vStep(web_data->data[6]);
+            //trajPlan.set_vStep(web_data->data[6]);
             
             // Debug check
             // std::cout << "web_data->data[0] = " << web_data->data[0] << ", trajPlan.getget_outer_frame_width() = " << trajPlan.get_outer_frame_width() << std::endl;
@@ -298,7 +304,7 @@ class Kinematics : public rclcpp::Node
 		KinematicsCalculations kinematicsCalc;
 		rclcpp::TimerBase::SharedPtr timer_;
 		rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr publisher_;
-		rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr subscription_;
+		rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr subscription_joy_;
         rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr subscription_web_;
 	};
 

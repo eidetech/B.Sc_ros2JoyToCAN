@@ -189,3 +189,11 @@ void TrajectoryPlanner::reset()
     pt_x.clear();
     pt_z.clear();
 }
+
+// Calculate vStep from percent overlap
+void TrajectoryPlanner::calc_vStep(float percent_overlap)
+{
+    float percent_factor = 1-(percent_overlap/100);
+    float vertical_coverage = 2*0.25*sin(25*PI/180);
+    wall_vStep_ = percent_factor * vertical_coverage;
+}

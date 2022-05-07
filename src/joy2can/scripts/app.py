@@ -39,7 +39,7 @@ class WebPublisher(Node):
 		self.wall_height = 0
 		self.x_offset = 0
 		self.z_offset = 0
-		self.vertical_step = 0
+		self.percent_overlap = 0
 
 		self.counter = 0
 
@@ -58,7 +58,7 @@ class WebPublisher(Node):
 					float(self.wall_height),
 					float(self.x_offset),
 					float(self.z_offset),
-					float(self.vertical_step),
+					float(self.percent_overlap),
 					float(self.job_status)]
 		wp.counter += 1
 		# Publish data to ROS
@@ -85,6 +85,7 @@ class MotorSetpointSub(Node):
 		self.mode = 0
 		self.lastMode = 1
 		self.t = 0
+		self.total_t = 0
 
 		self.firstIteration = True
 
@@ -97,6 +98,7 @@ class MotorSetpointSub(Node):
 		self.angPos_q2 = msg.data[3]
 		self.mode = 	 msg.data[4]
 		self.t = 		 msg.data[5]
+		self.total_t =   msg.data[6]
 
 if __name__ == '__main__':
 	# Initialize ROS node and web publisher object
@@ -116,7 +118,7 @@ if __name__ == '__main__':
 							   wall_height=wp.wall_height,
 							   x_offset=wp.x_offset,
 							   z_offset=wp.z_offset,
-							   vertical_step=wp.vertical_step)
+							   percent_overlap=wp.percent_overlap)
 
 	# App route for POST request updating the local parameters with data from the website
 	@app.route('/update_parameters', methods=['POST'])
@@ -128,7 +130,7 @@ if __name__ == '__main__':
 			wp.wall_height = request.form['wall_height']
 			wp.x_offset = request.form['x_offset']
 			wp.z_offset = request.form['z_offset']
-			wp.vertical_step = request.form['vertical_step']
+			wp.percent_overlap = request.form['percent_overlap']
 			wp.job_status = 0
 			rclpy.spin_once(wp)
 			return render_template("index.html", job_status= 0,
@@ -138,7 +140,7 @@ if __name__ == '__main__':
 								   wall_height=wp.wall_height,
 								   x_offset=wp.x_offset,
 								   z_offset=wp.z_offset,
-								   vertical_step=wp.vertical_step)
+								   percent_overlap=wp.percent_overlap)
 
 	# App route for the control page (control.html)
 	@app.route('/control')
@@ -179,9 +181,9 @@ if __name__ == '__main__':
 		wp.wall_height = data['default']['wall_height']
 		wp.x_offset = data['default']['x_offset']
 		wp.z_offset = data['default']['z_offset']
-		wp.vertical_step = data['default']['vertical_step']
+		wp.percent_overlap = data['default']['percent_overlap']
 		wp.job_status = data['default']['job_status']
-		print("wp frame:", data['default']['frame_width'])
+		#print("wp frame:", data['default']['frame_width'])
 		return render_template("index.html", job_status=float(wp.job_status),
 							   frame_width=float(wp.frame_width),
 							   frame_height=float(wp.frame_height),
@@ -189,7 +191,7 @@ if __name__ == '__main__':
 							   wall_height=float(wp.wall_height),
 							   x_offset=float(wp.x_offset),
 							   z_offset=float(wp.z_offset),
-							   vertical_step=float(wp.vertical_step))
+							   percent_overlap=float(wp.percent_overlap))
 
 	# App route for pulling the latest commit from GitHub
 	@app.route('/git_pull',  methods=['POST'])
@@ -201,11 +203,12 @@ if __name__ == '__main__':
 		return render_template("index.html", git_pull_done=True, hash=hash[:7])
 
 	@socketio.on('angVel')
-	def test():
-		emit('angVel_q1', motorSP.angVel_q1)
-		emit('angVel_q2', motorSP.angVel_q2)
-		percent = motorSP.t/66 * 100
-		emit('t', percent)
+	def angVel():
+		if(motorSP.total_t != 0):
+			emit('angVel_q1', motorSP.angVel_q1)
+			emit('angVel_q2', motorSP.angVel_q2)
+			percent = motorSP.t/motorSP.total_t * 100
+			emit('t', percent)
 
 	# Prints out where Flask is looking for the template folder. Useful for debugging if Flask can not find index.html for example
 	# app.config['EXPLAIN_TEMPLATE_LOADING'] = True

@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include "quintic.h"
+#include "math.h"
 
 #ifndef TRAJECTORYPLANNER_H
 #define TRAJECTORYPLANNER_H
@@ -56,6 +57,9 @@ public:
 
     // Reset calculation variables
     void reset();
+
+    // Calculations
+    void calc_vStep(float percent_overlap);
 
     // Vectors that holds [x,z] points for the path planning
     std::vector<float> pt_x;

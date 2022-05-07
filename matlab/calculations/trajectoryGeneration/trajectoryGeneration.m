@@ -2,7 +2,7 @@ clc; clear; close all;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARAMETERS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-sim = true; % toggle to start/stop playback animations of trajectory
+sim = false; % toggle to start/stop playback animations of trajectory
 
 plot_ik = true; % turn on/off inverse kinematics plots
 plot_fk = false; % turn on/off forward kinematics plots
@@ -12,13 +12,16 @@ paint_vel = 0.5;                            % [m/s] desired constant velocity wh
 ramp_dist = 0.3;                            % [m]   distance from stationary to start point
 ramp_time = 1;                              % [s]   time from ramp_dist to start point
 turn_time = 2;                              % [s]   time to turn around to pass wall one level above
-wall_width = 1.500;                         % [m]   width of wall
-wall_height = 2.000;                        % [m]   heigth of wall
-wall_vStep = 0.200;                         % [m]   vertical height step (vertical distance between horizontal lines
+wall_width = 1.900;                         % [m]   width of wall
+wall_height = 2.400;                        % [m]   heigth of wall
 
-spray_angle = 15*pi/180;                           % [rad] 15 deg to rad
-dist_to_waLL = 0.3;                         % [m] distance to wall
+spray_angle = 25*pi/180;                           % [rad] 15 deg to rad
+dist_to_waLL = 0.25;                         % [m] distance to wall
 spray_coverage_z = 2*dist_to_waLL*sin(spray_angle); % [m] spray coverage in z direction on wall (2*cathetus)
+
+percent_overlap = 30
+percent_factor = 1-(percent_overlap/100)
+wall_vStep = percent_factor*spray_coverage_z % [m]   vertical height step (vertical distance between horizontal lines
 
 outer_frame_width = 2.800;                  % [m] outermost frame width defined by telescopic poles
 outer_frame_height = 2.625;                 % [m] outermost frame height defined by telescopic poles

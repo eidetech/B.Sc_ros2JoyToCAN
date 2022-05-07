@@ -53,7 +53,7 @@ class Motor:
 				break
 
 	def setAxisState(self, axisState):
-		# Set closed loop control loop
+		# Set axis state
 		print("\nPutting axis", self.axisID, "into axis state ", axisState)
 		data = self.db.encode_message('Set_Axis_State', {'Axis_Requested_State': axisState})
 		msg = can.Message(arbitration_id=self.axisID_shifted | SET_AXIS_REQUESTED_STATE, is_extended_id=False,
@@ -80,11 +80,10 @@ class Motor:
 				break
 
 	def setControlMode(self, inputMode, controlMode):
-		# Set closed loop control loop
+		# Set control mode
 		print("\nPutting axis", self.axisID, "into control mode", controlMode)
 		data = self.db.encode_message('Set_Controller_Mode', {'Input_Mode': inputMode, 'Control_Mode': controlMode})
 		msg = can.Message(arbitration_id=self.axisID_shifted | SET_CONTROLLER_MODES, is_extended_id=False, data=data)
-		# print(msg)
 
 		# Try to send the CAN message to the bus
 		try:
