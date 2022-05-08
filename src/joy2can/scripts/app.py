@@ -85,7 +85,7 @@ class MotorSetpointSub(Node):
 		self.mode = 0
 		self.lastMode = 1
 		self.t = 0
-		self.total_t = 0
+		self.t_total = 0
 
 		self.firstIteration = True
 
@@ -98,7 +98,7 @@ class MotorSetpointSub(Node):
 		self.angPos_q2 = msg.data[3]
 		self.mode = 	 msg.data[4]
 		self.t = 		 msg.data[5]
-		self.total_t =   msg.data[6]
+		self.t_total =   msg.data[6]
 
 if __name__ == '__main__':
 	# Initialize ROS node and web publisher object
@@ -202,13 +202,15 @@ if __name__ == '__main__':
 		hash = repo.head.object.hexsha
 		return render_template("index.html", git_pull_done=True, hash=hash[:7])
 
-	@socketio.on('angVel')
-	def angVel():
-		if(motorSP.total_t != 0):
+	@socketio.on('client_data')
+	def client_data():
+		if(motorSP.t_total != 0):
 			emit('angVel_q1', motorSP.angVel_q1)
 			emit('angVel_q2', motorSP.angVel_q2)
-			percent = motorSP.t/motorSP.total_t * 100
-			emit('t', percent)
+			percent = motorSP.t/motorSP.t_total * 100
+			emit('percent', percent)
+		else:
+			emit('percent', 0)
 
 	# Prints out where Flask is looking for the template folder. Useful for debugging if Flask can not find index.html for example
 	# app.config['EXPLAIN_TEMPLATE_LOADING'] = True

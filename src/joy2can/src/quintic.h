@@ -44,7 +44,7 @@ public:
     float getVel();
     float getAcc();
 
-    // Matrices for solving the six coefficients (x_0 -> x_5)
+    // Vector and matrices for solving the six coefficients (x_0 -> x_5)
     MatrixXf matA;
     VectorXf vecB;
     VectorXf x;

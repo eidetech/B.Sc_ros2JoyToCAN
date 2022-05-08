@@ -64,9 +64,6 @@
 
 
 <div class="container">
-    <div class="progress">
-        <div class="progress-bar " role="progressbar" id="progress_bar" style="width: 0%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-      </div>
   <div class="row justify-content-start">
 
     {% if git_pull_done == True %}
@@ -75,8 +72,8 @@
     </div>
     {% endif %}
 
-    <p id="angVel_q1" style="display: inline;"> </p>
-    <p id="angVel_q2" style="display: inline;"> </p>
+    <!-- <p id="angVel_q1" style="display: inline;"> </p>
+    <p id="angVel_q2" style="display: inline;"> </p> -->
 
 
     <div class="col-6">
@@ -152,13 +149,6 @@
     <input type="text" id="percent_overlap" name="percent_overlap" class="form-control" placeholder="Percent overlap" aria-label="Percent overlap" aria-describedby="basic-addon1">
     {% endif %}
 </div>
-
-    <!-- <div class="form-check">
-      <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" checked>
-      <label class="form-check-label" for="flexCheckDefault">
-        Log job to database
-      </label>
-    </div> -->
     <br>
     <input class="btn btn-dark" type="submit" value="Update job parameters">
   </form>
