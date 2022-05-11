@@ -24,7 +24,7 @@ public:
     // Destructor
     ~TrajectoryPlanner();
 
-    // TODO add desc
+    // Calculates the system matrix containing all the QPP data for the specified trajectory
     void calcCartesianPosVelAcc();
 
     // Add all the points in the trajectory to the pt vectors
@@ -70,23 +70,19 @@ public:
 
 private:
 // Trajectory generation parameters
-float paint_vel_ = 0.5;     // [m/s] desired constant velocity when painting
+float paint_vel_ = 0.2;     // [m/s] desired constant velocity when painting
 float ramp_dist_ = 0.3;     // [m]   distance from stationary to start point
-float ramp_time_ = 1;       // [s]   time from ramp_dist to start point
+float ramp_time_ = 2;       // [s]   time from ramp_dist to start point
 float turn_time_ = 2;       // [s]   time to turn around to pass wall one level above
-float wall_width_ = 1.5;  // [m]   width of wall
-float wall_height_ = 2.0; // [m]   heigth of wall
-float wall_vStep_ = 0.230;  // [m]   vertical height step (vertical distance between horizontal lines
+float wall_width_ = 1;      // [m]   width of wall
+float wall_height_ = 1;     // [m]   heigth of wall
+float wall_vStep_ = 0.1479; // [m]   vertical height step (vertical distance between horizontal lines
 
-// float spray_angle_ = 15.*PI/180;     // [rad] 15 deg to rad
-// float dist_to_wall_ = 0.3;    // [m] distance to wall
-// float spray_coverage_z_ = 2*dist_to_wall_*sin(spray_angle_); // spray coverage in z direction
+float outer_frame_width_ = 2;    // [m] outermost frame width defined by telescopic poles
+float outer_frame_height_ = 1.5; // [m] outermost frame height defined by telescopic poles
 
-float outer_frame_width_ = 2.8; // [m] outermost frame width defined by telescopic poles
-float outer_frame_height_ = 2.625; // [m] outermost frame height defined by telescopic poles
-
-float x_offset_ = 0.1500;    // [m]   offset from (0,0) in x direction
-float z_offset_ = 0.200;    // [m]   offset from (0,0) in z direction
+float x_offset_ = 0.400;    // [m]   offset from (0,0) in x direction
+float z_offset_ = 0.400;    // [m]   offset from (0,0) in z direction
 
 int floor_ = 0;             // [-]   keeps track of the current floor
 float totalHeight_ = 0;     // [m]   keeps track of the total height

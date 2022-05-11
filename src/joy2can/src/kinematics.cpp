@@ -14,6 +14,7 @@
 #include "quintic.h"
 #include "ik.h"
 #include "trajectoryPlanner.h"
+#include "Eigen/Dense"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -76,10 +77,12 @@ class Kinematics : public rclcpp::Node
 
         bool run = false;
 
+        bool reset_initial_q_pos = true;
+
         // Velocity/position control mode
-        // 0 = velocity control
-        // 1 = position control
-        int mode = 0;
+        // mode = 0 ==> velocity control
+        // mode = 1 ==> position control
+        int mode = 1; // Start system in position control in order to home robot if the robot is not at home
 
 		// Variables used for quintic trajectory planning
 		float t0 = 0.;
@@ -106,18 +109,18 @@ class Kinematics : public rclcpp::Node
 		void timer_callback()
 		{
 		// Resize motorVel array to 3 elements (this could be refactored to not happen every callback)
-		motorVel.data.resize(7);
+		motorVel.data.resize(8);
 
 		// Set offsets from origo to pulleys
-		ik.setOffsets(0, trajPlan.get_outer_frame_height(), trajPlan.get_outer_frame_width(), trajPlan.get_outer_frame_height());
+		// ik.setOffsets(0, trajPlan.get_outer_frame_height(), trajPlan.get_outer_frame_width(), trajPlan.get_outer_frame_height());
 
-		if(!printed)
-		{
-		trajPlan.plan();
-		trajPlan.printPoints();
-		trajPlan.calcCartesianPosVelAcc();
-		printed = !printed;
-		}
+		// if(!printed)
+		// {
+		// trajPlan.plan();
+		// trajPlan.printPoints();
+		// trajPlan.calcCartesianPosVelAcc();
+		// printed = !printed;
+		// }
 		
 		if(idx <= trajPlan.N-1 && run)
 		{
@@ -149,24 +152,61 @@ class Kinematics : public rclcpp::Node
 
             sprayStatus = trajPlan.posVelAccTime(idx, 15);
 
+             mode = 0; // 0 = velocity control
+
 			// Calculate quintic trajectory for x and z
 			this->qX.calcQuinticTraj(t0,t1,t_quintic,x0,x1,v0_x,v1_x,a0_x,a1_x);
 			this->qZ.calcQuinticTraj(t0,t1,t_quintic,z0,z1,v0_z,v1_z,a0_z,a1_z);
 
-			// Calculate the inverse kinematics based on the quintic trajectory
-			this->ik.calc(qX.getPos(), qZ.getPos(), qX.getVel(), qZ.getVel());
+            float theta = -1.2*PI/180;
+            Matrix2f rot;
+            Vector2f vec;
+            
+            rot << cos(theta), sin(theta), -sin(theta), cos(theta);
+            vec << qX.getPos(), qZ.getPos();
 
+            vec = rot*vec;
+
+            Vector2f vec_vel;
+            
+            vec_vel << qX.getVel(), qZ.getVel();
+
+            vec_vel = rot*vec_vel;
+
+			// Calculate the inverse kinematics based on the quintic trajectory
+			this->ik.calc(vec(0), vec(1), vec_vel(0), vec_vel(1));
+
+            if(reset_initial_q_pos)
+            {
+            // Assign the calculated data to the ROS message
+			motorVel.data[0] = ik.getAngVel_q1();
+			motorVel.data[1] = ik.getAngVel_q2();
+            motorVel.data[2] = ik.getAngPos_q1();
+            motorVel.data[3] = ik.getAngPos_q2();
+            // Velocity/position control mode
+            // mode = 0 ==> velocity control
+            // mode = 1 ==> position control
+            motorVel.data[4] = mode;
+			motorVel.data[5] = this->t;
+            motorVel.data[6] = this->t_total;
+            motorVel.data[7] = 1.0; // Reset signal, 1 = True
+            reset_initial_q_pos = false; 
+            }else{
 			// Assign the calculated data to the ROS message
 			motorVel.data[0] = ik.getAngVel_q1();
 			motorVel.data[1] = ik.getAngVel_q2();
             motorVel.data[2] = ik.getAngPos_q1();
             motorVel.data[3] = ik.getAngPos_q2();
-            motorVel.data[4] = mode; // Velocity/position control mode
+            // Velocity/position control mode
+            // mode = 0 ==> velocity control
+            // mode = 1 ==> position control
+            motorVel.data[4] = mode;
 			motorVel.data[5] = this->t;
             motorVel.data[6] = this->t_total;
-
+            motorVel.data[7] = 0.0; // Reset signal, 0 = False
+            }
 			// Terminal feedback
-			std::cout << "x: " << motorVel.data[2] << ", z: " << motorVel.data[3] << ", t: " << motorVel.data[5] << std::endl;
+			std::cout << "x: " << qX.getPos() << ", z: " << qZ.getPos() << ", t: " << motorVel.data[5] << std::endl;
 
 			// ROS publisher
 			publisher_->publish(motorVel);
@@ -185,20 +225,20 @@ class Kinematics : public rclcpp::Node
 				std::cout << "idx: " << idx << std::endl;
 			}
 			}
-		}else{
-            //RCLCPP_INFO(this->get_logger(), "\n System parked.");
+		}else{ // System is not in run mode
             motorVel.data[0] = 0;
 			motorVel.data[1] = 0;
             motorVel.data[2] = ik.getAngPos_q1();
             motorVel.data[3] = ik.getAngPos_q2();
             motorVel.data[4] = mode;
 			motorVel.data[5] = this->t;
+            motorVel.data[7] = 0.0; // Reset signal, 0 = False
 
             // ROS publisher
             publisher_->publish(motorVel);
 
             // CAN publisher
-            sprayStatus = 2;
+            sprayStatus = 2; // Spray gun off
             can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
         }
 		}
@@ -227,6 +267,7 @@ class Kinematics : public rclcpp::Node
                 trajPlan.calcCartesianPosVelAcc();
 
                 run = true;
+                reset_initial_q_pos = true;
                 mode = 0;
                 idx = 0;
                 t = 0;
@@ -242,6 +283,7 @@ class Kinematics : public rclcpp::Node
             motorVel.data[3] = 0;
             motorVel.data[4] = mode;
 			motorVel.data[5] = this->t;
+            motorVel.data[7] = 0.0;
 
             // ROS publisher
             publisher_->publish(motorVel);
@@ -265,7 +307,6 @@ class Kinematics : public rclcpp::Node
             trajPlan.set_x_offset(web_data->data[4]);
             trajPlan.set_z_offset(web_data->data[5]);
             trajPlan.calc_vStep(web_data->data[6]);
-            //trajPlan.set_vStep(web_data->data[6]);
             
             // Debug check
             // std::cout << "web_data->data[0] = " << web_data->data[0] << ", trajPlan.getget_outer_frame_width() = " << trajPlan.get_outer_frame_width() << std::endl;
@@ -276,25 +317,27 @@ class Kinematics : public rclcpp::Node
                 trajPlan.plan();
                 trajPlan.calcCartesianPosVelAcc();
 
-                run = true;
-                mode = 0;
+                reset_initial_q_pos = true;
+                mode = 0.;
                 idx = 0;
-                t = 0;
-                t_quintic = 0;
+                t = 0.;
+                t_quintic = 0.;
+                run = true;
+
             }else if ((int)web_data->data[7] == 1) // Pause job
             {
                 run = false;
                 // CAN publisher
-                sprayStatus = 2;
+                sprayStatus = 2; // Stop spray gun
                 can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
             }else{ // Stop job
+                run = false;
                 idx = 0;
                 t = 0;
                 t_quintic = 0;
-                run = false;
-                mode = 1;
+                mode = 1.0;
                 // CAN publisher
-                sprayStatus = 2;
+                sprayStatus = 2; // Stop spray gun
                 can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
             }
             

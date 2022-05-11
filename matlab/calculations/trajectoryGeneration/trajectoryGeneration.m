@@ -4,16 +4,16 @@ clc; clear; close all;
 
 sim = false; % toggle to start/stop playback animations of trajectory
 
-plot_ik = true; % turn on/off inverse kinematics plots
+plot_ik = false; % turn on/off inverse kinematics plots
 plot_fk = false; % turn on/off forward kinematics plots
 pva_plots = false; % turn on/off pos, vel, acc plots
 
-paint_vel = 0.5;                            % [m/s] desired constant velocity when painting
+paint_vel = 0.2;                            % [m/s] desired constant velocity when painting
 ramp_dist = 0.3;                            % [m]   distance from stationary to start point
-ramp_time = 1;                              % [s]   time from ramp_dist to start point
+ramp_time = 2;                              % [s]   time from ramp_dist to start point
 turn_time = 2;                              % [s]   time to turn around to pass wall one level above
-wall_width = 1.900;                         % [m]   width of wall
-wall_height = 2.400;                        % [m]   heigth of wall
+wall_width = 1.0;                         % [m]   width of wall
+wall_height = 1.0;                        % [m]   heigth of wall
 
 spray_angle = 25*pi/180;                           % [rad] 15 deg to rad
 dist_to_waLL = 0.25;                         % [m] distance to wall
@@ -23,11 +23,13 @@ percent_overlap = 30
 percent_factor = 1-(percent_overlap/100)
 wall_vStep = percent_factor*spray_coverage_z % [m]   vertical height step (vertical distance between horizontal lines
 
-outer_frame_width = 2.800;                  % [m] outermost frame width defined by telescopic poles
-outer_frame_height = 2.625;                 % [m] outermost frame height defined by telescopic poles
+outer_frame_width = 2;                  % [m] outermost frame width defined by telescopic poles
+outer_frame_height = 1.5;                 % [m] outermost frame height defined by telescopic poles
 
-x_offset = 0.150;                           % [m]   offset from (0,0) in x direction
-z_offset = 0.200;                           % [m]   offset from (0,0) in z direction
+x_offset = 0.4;                           % [m]   offset from (0,0) in x direction
+z_offset = 0.4;                           % [m]   offset from (0,0) in z direction
+
+gear_ratio = 104/5
 
 %%%%%%%%%%%%%%%%%%% POINTS TO GENERATE PATH BETWEEN %%%%%%%%%%%%%%%%%%%%%%%
 
@@ -110,7 +112,7 @@ pt = [pt;
 
 %%%%%%%%%%%%%%%%%%%%%%%% TRAJECTORY GENERATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-dt = 1e-3;
+dt = 0.01;
 N = length(pt)-1;   % number of paths to generate and put together
 
 t0 = 0;             % calculates every path with initial time 0
@@ -196,7 +198,7 @@ end
 
 d = wall_width;               % [m] width between the two pulleys
 R = 125.5/(2*1000);           % [m] radius of the spool (125.5mm diameter spool, divided by 2 to get radius and then converted to [m]
-L_wire = 19.5*2*pi*R;         % [m] max length of wire on spool
+L_wire = 34*2*pi*R;         % [m] max length of wire on spool
 
 xA = 0;                       % x [m] offset from origo to pulley A
 zA = outer_frame_height;      % z [m] offset from origo to pulley A
@@ -212,9 +214,9 @@ d2_z = z_path_pos - zB;       % z [m] component of distance vector from origo to
 %%%%%%%%%%%%%%%%% M1 %%%%%%%%%%%%%%%%%%
 L_1 = sqrt(d1_x.^2 + d1_z.^2);% [m] actual length of wire L1 (from pulley A -> TCP)
 theta_1 = atan2(d1_z,d1_x);   % [rad] angle between horizontal line between pulleys and L1
-q_1 = -(L_wire-L_1)./R;       % [rad] angular position of motor M1
+q_1 = (L_1)./R;       % [rad] angular position of motor M1
 
-q_1_rev = q_1/(2*pi)*10;      % [rev] angular position of motor M1
+q_1_rev = q_1/(2*pi)*gear_ratio;      % [rev] angular position of motor M1
 
 % angular velocity of motor M1 [rad/s]
 q1_t = (z_path_vel + (x_path_vel.*cos(theta_1)) ./ (sin(theta_1))) ./ (sin(theta_1) + ((cos(theta_1).^2)) ./ (sin(theta_1)))/R;
@@ -222,9 +224,9 @@ q1_t = (z_path_vel + (x_path_vel.*cos(theta_1)) ./ (sin(theta_1))) ./ (sin(theta
 %%%%%%%%%%%%%%%%% M0 %%%%%%%%%%%%%%%%%%
 L_2 = sqrt(d2_x.^2 + d2_z.^2);   % [m] actual length of wire L2 (from pulley B -> TCP)
 theta_2 = atan2(d2_z,d2_x);      % [rad] angle between horizontal line between pulleys and L2
-q_2 = -(L_wire-L_2)./R;          % [rad] angular position of motor M0
+q_2 = (L_2)./R;          % [rad] angular position of motor M0
 
-q_2_rev = q_2/(2*pi)*10;
+q_2_rev = q_2/(2*pi)*gear_ratio;
 
 % angular velocity of motor M0 [rad/s]
 q2_t = (z_path_vel + (x_path_vel.*cos(theta_2)) ./ (sin(theta_2))) ./ (sin(theta_2) + ((cos(theta_2).^2)) ./ (sin(theta_2)))/R;
@@ -233,9 +235,9 @@ q2_t = (z_path_vel + (x_path_vel.*cos(theta_2)) ./ (sin(theta_2))) ./ (sin(theta
 %figure(77)
 q1_t_pyt = ((d1_x.^2+d1_z.^2).^(-1/2).*((d1_x.*x_path_vel)+(d1_z.*-z_path_vel)))/R;
 q2_t_pyt = ((d2_x.^2+d2_z.^2).^(-1/2).*((d2_x.*x_path_vel)+(d2_z.*-z_path_vel)))/R;
-%plot(t_vect, q1_t_pyt/(2*pi)*10, 'b-')
+%plot(t_vect, q1_t_pyt/(2*pi)*gear_ratio, 'b-')
 hold on
-%plot(t_vect, q2_t_pyt/(2*pi)*10, 'r--')
+%plot(t_vect, q2_t_pyt/(2*pi)*gear_ratio, 'r--')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PVA PLOTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if pva_plots
@@ -413,7 +415,7 @@ ylim([min(q2_t)-0.05 max(q2_t)+0.05])
 subplot(ik_rows, ik_columns, 7)
 hold on
     plot(t_vect(1:end-1), q1_rev_diff,'r')
-    plot(t_vect, q1_t/(2*pi)*10, 'b--')
+    plot(t_vect, q1_t/(2*pi)*gear_ratio, 'b--')
 hold off
 grid on
 title('q_1 vel')
@@ -422,17 +424,17 @@ ylabel("q_1' [rev/s]")
 ylim([min(q1_t)/(2*pi)*10-0.05 max(q1_t)/(2*pi)*10+0.05])
 
 subplot(ik_rows, ik_columns, 8)
-    plot(t_vect, q2_t/(2*pi)*10)
+    plot(t_vect, q2_t/(2*pi)*gear_ratio)
 grid on
 title('q_2 vel')
 xlabel('t [s]')
 ylabel("q_2' [rev/s]")
-ylim([min(q2_t)/(2*pi)*10-0.05 max(q2_t)/(2*pi)*10+0.05])
+ylim([min(q2_t)/(2*pi)*gear_ratio-0.05 max(q2_t)/(2*pi)*gear_ratio+0.05])
 end
 figure(100)
 hold on
-plot(t_vect,q1d)
-plot(t_vect,q1_t)
+% plot(t_vect,q1d)
+% plot(t_vect,q1_t)
 hold off
 %%%%%%%%%%%%%%%%%%%%%%%%%%% FORWARD KINEMATICS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 theta_1_fk = acos((L_1.^2+d.^2-L_2.^2)./(2.*L_1.*d)); % [rad]
@@ -538,6 +540,49 @@ legend('q2_{rev}')
 title('q_2 FK rev')
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Rev plot %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+close all
+
+%read data example: Import columns as column vectors 
+M = csvread('q1_q2_pos_rqt_2.csv')
+
+q1_rqt = M(:,6)
+t_vect_rqt = M(:,7)
+q2_rqt = M(:,8)
+
+rev_row = 2
+rev_col = 2
+% angular position
+figure(101)
+subplot(rev_row, rev_col, 1)
+hold on
+plot(t_vect, q_1_rev-q_1_rev(1))
+plot(t_vect, q1_rqt(1:length(t_vect)))
+hold off
+grid on
+title('q_1 pos')
+xlabel('t [s]')
+ylabel("q_1' [rev]")
+
+subplot(rev_row, rev_col, 2)
+hold on
+plot(t_vect, q_2_rev-q_2_rev(2))
+plot(t_vect, q2_rqt(1:length(t_vect)))
+hold off
+grid on
+title('q_2 pos')
+xlabel('t [s]')
+ylabel("q_2' [rev]")
+
+subplot(rev_row, rev_col, 3)
+hold on
+plot(t_vect, q_1_rev-q_1_rev(1))
+plot(t_vect, q_2_rev-q_1_rev(2))
+grid on
+xlabel('t [s]')
+ylabel("[rev]")
+legend('q_1', 'q_2')
+hold off
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% ANIMATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % NOT REAL TIME PLAYBACK

@@ -17,17 +17,11 @@ class MotorSetpointSub(Node):
 
 		self.angPos_q1_initial = 0
 		self.angPos_q2_initial = 0
-		self.angPos_q1_final = 0
-		self.angPos_q2_final = 0
 
-		self.mode = 0
-		self.lastMode = 1
+		self.mode = 1 # Start system in position mode
+		self.lastMode = 0
 		self.t = 0
 		self.total_t = 0
-
-		self.firstIteration = True
-
-		self.reset = 0
 
 	def listener_callback(self, msg):
 		self.angVel_q1 = msg.data[0]
@@ -37,8 +31,6 @@ class MotorSetpointSub(Node):
 		self.mode = 	 msg.data[4]
 		self.t = 		 msg.data[5]
 		self.t_total =   msg.data[6]
-
-		if(self.firstIteration == True):
+		if (msg.data[7] == 1.0):
 			self.angPos_q1_initial = msg.data[2]
 			self.angPos_q2_initial = msg.data[3]
-			self.firstIteration = False

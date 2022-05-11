@@ -6,13 +6,16 @@ import cantools
 
 
 class Motor:
-	def __init__(self, axisID, bus, db, encoder_cpr):
+	def __init__(self, axisID, bus, db, encoder_cpr, kp, ki, kd):
 		self.axisID = axisID
 		self.axisID_shifted = self.axisID << 5
 		self.bus = bus
 		self.db = db
 		self.sp = 0
 		self.encoder_cpr = encoder_cpr
+		self.kp = kp
+		self.ki = ki
+		self.kd = kd
 
 	def init(self):
 		# Calibration sequence for motors

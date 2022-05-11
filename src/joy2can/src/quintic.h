@@ -20,7 +20,7 @@ public:
 
 public:
     // Function for calculating trajectory with quintic polynomial (per axis)
-    /*    Inputs:
+    /*      Inputs:
             t0  ==> [s]     time at initial point
             t1  ==> [s]     time at final point
             t  ==>  [s]     current time
@@ -31,7 +31,7 @@ public:
             a0  ==> [m/s^2] acceleration at initial point
             a1  ==> [m/s^2] acceleration at final point
 
-        Ouputs (via getters):
+            Ouputs (via getters):
             p   ==> [m]     array of position points
             v   ==> [m/s]   array of velocity points
             a   ==> [m/s^2] array of acceleration points
@@ -44,10 +44,10 @@ public:
     float getVel();
     float getAcc();
 
-    // Vector and matrices for solving the six coefficients (x_0 -> x_5)
+    // Vector and matrices for solving the six coefficients (c_0 -> c_5)
     MatrixXf matA;
     VectorXf vecB;
-    VectorXf x;
+    VectorXf c;
     
 private:
     // Position, velocity and acceleration variables
