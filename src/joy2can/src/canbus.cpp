@@ -28,8 +28,9 @@ CANbus::CANbus()
     this->rx_cartCoord.can_id = 0x02; // ID of CAN message
     this->rx_cartCoord.can_dlc = 8; // Size of payload
 
-    this->tx_sprayStatus.can_id = 0x40; // ID of CAN message for sending spray status
+    this->tx_sprayStatus.can_id = 0x409; // ID of CAN message for sending spray status
     this->tx_sprayStatus.can_dlc = 8; // Size of payload
+
 }
 
 
@@ -93,4 +94,17 @@ void CANbus::send_spray_status(float sprayStatus)
         this->tx_sprayStatus.data[i] = 0;
     }
     write(this->_socket, &this->tx_sprayStatus, sizeof(struct can_frame));
+}
+
+float CANbus::read_IMU_pitch()
+{
+    read(this->_socket,&this->rx_IMU, sizeof(struct can_frame));
+    if(rx_IMU.can_id == 0x80)
+    {
+        uint16_t rx = rx_IMU.data[0] | rx_IMU.data[1] << 8;
+        pitch = (float)rx;
+        pitch = ((pitch-10000)/10000)*180/PI;
+        //std::cout << "Pitch: " << ((pitch-10000)/10000)*180/PI << std::endl;
+    }
+    return pitch;
 }

@@ -48,11 +48,13 @@ def main(args=None):
 
 	#bus = can.Bus("vcan0", bustype="virtual")
 	bus = can.Bus("can0", bustype="socketcan")
-	q1 = Motor(0x01, bus, db, 8192, 5, 0, 0) # axisID, bus, db, encoder_cpr, kp, ki, kd
-	q2 = Motor(0x00, bus, db, 8192, 5, 0, 0) # axisID, bus, db, encoder_cpr, kp, ki, kd
+	q1 = Motor(0x01, bus, db, 8192, 40, 20, 0.5) # axisID, bus, db, encoder_cpr, kp, ki, kd
+	q2 = Motor(0x00, bus, db, 8192, 40, 20, 0.5) # axisID, bus, db, encoder_cpr, kp, ki, kd
 
 	q1.setAxisState(AXIS_STATE_CLOSED_LOOP_CONTROL)
 	q2.setAxisState(AXIS_STATE_CLOSED_LOOP_CONTROL)
+
+	pid = True
 
 	prevT = 0
 
@@ -76,6 +78,7 @@ def main(args=None):
 			q2.setLimits(30, 30)
 			q1.setLimits(30, 30)
 			motorSP.lastMode = 0
+			prevT = motorSP.get_clock().now().nanoseconds / 1.0e9
 		elif(motorSP.mode == 0 and motorSP.lastMode == 0): # Run system in velocity control mode
 
 			odrive_data_pub.q1_pos_est = posEst_q1
@@ -91,7 +94,7 @@ def main(args=None):
 
 			currT = motorSP.get_clock().now().nanoseconds / 1.0e9
 
-			deltaT = ((float)(currT - prevT))
+			deltaT = float(currT - prevT)
 			prevT = currT
 
 			# Closed Loop Control for q1:
@@ -138,9 +141,13 @@ def main(args=None):
 			odrive_data_pub.q1_e = uu_q1
 			odrive_data_pub.q2_e = uu_q2
 
-			# Set velocities for q1 and q2 from control loops:
-			q1.setVelocity(u_q1, 0)
-			q2.setVelocity(u_q2, 0)
+
+			if pid: # Set velocities for q1 and q2 from control loops:
+				q1.setVelocity(u_q1, 0)
+				q2.setVelocity(u_q2, 0)
+			else: # Set velocities directly from velocity reference:
+				q1.setVelocity(motorSP.angVel_q1, 0)
+				q2.setVelocity(motorSP.angVel_q2, 0)
 
 			#print("q1 initial pos:", motorSP.angPos_q1_initial, "q2 initial pos:", motorSP.angPos_q2_initial)
 			#print("q1:", posEst_q1, "q2:", posEst_q2)

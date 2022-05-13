@@ -12,6 +12,10 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
+#ifndef PI
+#define PI 3.14159265359
+#endif
+
 
 class CANbus
 {
@@ -24,6 +28,9 @@ class CANbus
 
         void send_data(float ps4Data[]);
         void send_spray_status(float sprayStatus);
+        float read_IMU_pitch();
+
+        float pitch;
 
     private:
         int _socket;
@@ -34,6 +41,8 @@ class CANbus
         struct can_frame rx_cartCoord;
 
         struct can_frame tx_sprayStatus;
+
+        struct can_frame rx_IMU;
 };
 
 #endif

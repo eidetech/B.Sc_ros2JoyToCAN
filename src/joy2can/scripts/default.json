@@ -5,8 +5,8 @@
       "frame_height": 2.55,
       "wall_width": 1.0,
       "wall_height": 1.0,
-      "x_offset": 0.3,
-      "z_offset": 0.94,
+      "x_offset": 0.285,
+      "z_offset": 0.91,
       "percent_overlap": 30,
       "job_status": 0
     }

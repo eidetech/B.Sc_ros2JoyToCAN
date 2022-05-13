@@ -10,7 +10,6 @@
 #include "sensor_msgs/msg/joy.hpp"
 
 #include "canbus.h"
-#include "kinematicsCalculations.h"
 #include "quintic.h"
 #include "ik.h"
 #include "trajectoryPlanner.h"
@@ -42,7 +41,13 @@ class Kinematics : public rclcpp::Node
 		timer_ = this->create_wall_timer(
 		10ms, std::bind(&Kinematics::timer_callback, this));
 
-		RCLCPP_INFO(this->get_logger(), "Publishing to motor_sp topic");
+        RCLCPP_INFO(this->get_logger(), "Publishing to motor_sp topic");
+
+        // IMU publisher
+		publisher_imu_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("imu", 10);
+		timer_imu_ = this->create_wall_timer(
+		10ms, std::bind(&Kinematics::timer_callback_imu, this));
+
 		}
 
 		~Kinematics()
@@ -52,6 +57,9 @@ class Kinematics : public rclcpp::Node
 
 		// ROS message to send motor velocities
 		std_msgs::msg::Float32MultiArray motorVel;
+
+		// ROS message to send IMU data
+		std_msgs::msg::Float32MultiArray imuData;
 
 		// Quintic objects for calculating x and z position, velocity and acceleration
 		Quintic qX;
@@ -105,7 +113,20 @@ class Kinematics : public rclcpp::Node
 		// Index variable to keep track of which path sequence is running
 		int idx = 0;
 
+        // IMU pitch angle
+        float pitch = 0;
+
 	private:
+        void timer_callback_imu(){
+        // Read IMU data and send ROS message
+        pitch = can->read_IMU_pitch();
+        
+        imuData.data.resize(1);
+        imuData.data[0] = pitch;
+        // ROS publisher
+		publisher_imu_->publish(imuData);
+        }
+
 		void timer_callback()
 		{
 		// Resize motorVel array to 3 elements (this could be refactored to not happen every callback)
@@ -158,7 +179,7 @@ class Kinematics : public rclcpp::Node
 			this->qX.calcQuinticTraj(t0,t1,t_quintic,x0,x1,v0_x,v1_x,a0_x,a1_x);
 			this->qZ.calcQuinticTraj(t0,t1,t_quintic,z0,z1,v0_z,v1_z,a0_z,a1_z);
 
-            float theta = -1.2*PI/180;
+            float theta = (-0.1)*PI/180;
             Matrix2f rot;
             Vector2f vec;
             
@@ -344,9 +365,10 @@ class Kinematics : public rclcpp::Node
             
         }
 		CANbus* can;
-		KinematicsCalculations kinematicsCalc;
 		rclcpp::TimerBase::SharedPtr timer_;
+        rclcpp::TimerBase::SharedPtr timer_imu_;
 		rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr publisher_;
+        rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr publisher_imu_;
 		rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr subscription_joy_;
         rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr subscription_web_;
 	};
