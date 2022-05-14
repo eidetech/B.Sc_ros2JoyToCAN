@@ -1,13 +1,19 @@
 {
   "default":
     {
-      "frame_width": 2.75,
-      "frame_height": 2.55,
+      "frame_width": 2.8,
+      "frame_height": 2.57,
       "wall_width": 1.0,
       "wall_height": 1.0,
-      "x_offset": 0.285,
-      "z_offset": 0.91,
+      "x_offset": 0.17,
+      "z_offset": 1.1,
       "percent_overlap": 30,
-      "job_status": 0
+      "job_status": 0,
+      "pitch_sp": -7,
+      "idle_speed": 90,
+      "counterforce_speed": 120,
+      "kp_out": 5,
+      "ki_out": 0,
+      "kd_out": 0
     }
 }

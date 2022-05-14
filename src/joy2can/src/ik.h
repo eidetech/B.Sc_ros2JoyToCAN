@@ -33,7 +33,7 @@ private:
     float R = 125.5/(2*1000);   // [m] radius of spool
     float L_wire = 34*PI*R;     // [m] total length of wire on spool
 
-    float gear_ratio = 20.8;    // ratio of the the gearbox between motor and spool
+    float gear_ratio = 10;    // ratio of the the gearbox between motor and spool
 
     float xA_ = 0;
     float zA_ = 0;

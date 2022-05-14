@@ -78,7 +78,7 @@
 
     <div class="col-6">
   <h3>Configure job parameters</h3>
-  <div class="progress w-100 m-3" style="height: 50px;">
+  <div class="progress w-100 mb-3" style="height: 50px;">
     <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" role="progressbar" id="progress_bar" style="width: 0%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"><h5 id="percentage"></h5></div>
   </div>
     <form id="parameters_form" action="/update_parameters" method="POST">
@@ -159,19 +159,61 @@
   <form id="parameters_form" action="/load_default_params" method="POST">
     <button type="submit" class="btn btn-danger mt-3">Load default test parameters</button>
 </form>
-
-<form id="parameters_form" action="/home" method="POST">
-    <button type="submit" class="btn btn-danger mt-3">Home machine</button>
-</form>
 <br>
-<form id="pitch_form" action="/update_pitch" method="POST">
+<form id="pitch_form" action="/update_spraygun" method="POST">
 <label for="pitch_sp" class="form-label">Pitch setpoint [deg]</label>
 <div class="input-group mb-3">
-    <span class="input-group-text"><img src="/static/bootstrap-icons/caret-right.svg" width="20" height="20"></span>
+    <span class="input-group-text"><img src="/static/bootstrap-icons/compass.svg" width="20" height="20"></span>
     {% if pitch_sp %}
     <input type="text" id="pitch_sp" name="pitch_sp" class="form-control" value="{{ pitch_sp }}" aria-label="Pitch setpoint" aria-describedby="basic-addon1">
     {% else %}
     <input type="text" id="pitch_sp" name="pitch_sp" class="form-control" aria-label="Pitch setpoint" aria-describedby="basic-addon1">
+    {% endif %}
+</div>
+<label for="idle_speed" class="form-label">Propeller idle speed [PWM]</label>
+<div class="input-group mb-3">
+    <span class="input-group-text"><img src="/static/bootstrap-icons/reception-2.svg" width="20" height="20"></span>
+    {% if idle_speed %}
+    <input type="text" id="idle_speed" name="idle_speed" class="form-control" value="{{ idle_speed }}" aria-label="Propeller idle speed" aria-describedby="basic-addon1">
+    {% else %}
+    <input type="text" id="idle_speed" name="idle_speed" class="form-control" aria-label="Propeller idle speed" aria-describedby="basic-addon1">
+    {% endif %}
+</div>
+<label for="counterforce_speed" class="form-label">Propeller counterforce speed [PWM]</label>
+<div class="input-group mb-3">
+    <span class="input-group-text"><img src="/static/bootstrap-icons/reception-4.svg" width="20" height="20"></span>
+    {% if counterforce_speed %}
+    <input type="text" id="counterforce_speed" name="counterforce_speed" class="form-control" value="{{ counterforce_speed }}" aria-label="Propeller counterforce speed" aria-describedby="basic-addon1">
+    {% else %}
+    <input type="text" id="counterforce_speed" name="counterforce_speed" class="form-control" aria-label="Propeller counterforce speed" aria-describedby="basic-addon1">
+    {% endif %}
+</div>
+
+<label for="kp_out" class="form-label">Kp</label>
+<div class="input-group mb-3">
+    <span class="input-group-text"><img src="/static/bootstrap-icons/graph-up.svg" width="20" height="20"></span>
+    {% if kp_out %}
+    <input type="text" id="kp_out" name="kp_out" class="form-control" value="{{ kp_out }}" aria-label="Kp" aria-describedby="basic-addon1">
+    {% else %}
+    <input type="text" id="kp_out" name="kp_out" class="form-control" value="{{ 0 }}" aria-label="Kp" aria-describedby="basic-addon1">
+    {% endif %}
+</div>
+<label for="ki_out" class="form-label">Ki</label>
+<div class="input-group mb-3">
+    <span class="input-group-text"><img src="/static/bootstrap-icons/graph-up.svg" width="20" height="20"></span>
+    {% if ki_out %}
+    <input type="text" id="ki_out" name="ki_out" class="form-control" value="{{ ki_out }}" aria-label="Ki" aria-describedby="basic-addon1">
+    {% else %}
+    <input type="text" id="ki_out" name="ki_out" class="form-control" value="{{ 0 }}" aria-label="Ki" aria-describedby="basic-addon1">
+    {% endif %}
+</div>
+<label for="kd_out" class="form-label">Kd</label>
+<div class="input-group mb-3">
+    <span class="input-group-text"><img src="/static/bootstrap-icons/graph-up.svg" width="20" height="20"></span>
+    {% if kd_out %}
+    <input type="text" id="kd_out" name="kd_out" class="form-control" value="{{ kd_out }}" aria-label="Kd" aria-describedby="basic-addon1">
+    {% else %}
+    <input type="text" id="kd_out" name="kd_out" class="form-control" value="{{ 0 }}" aria-label="Kd" aria-describedby="basic-addon1">
     {% endif %}
 </div>
     <button type="submit" class="btn btn-danger mt-3">Update pitch setpoint</button>
@@ -220,6 +262,26 @@
     <tr>
         <th style="font-weight: normal;">Pitch setpoint [deg]</th>
         <td style="font-weight: normal;">{{ pitch_sp }}</td>
+    </tr>
+    <tr>
+        <th style="font-weight: normal;">Propeller idle speed [PWM]</th>
+        <td style="font-weight: normal;">{{ idle_speed }}</td>
+    </tr>
+    <tr>
+        <th style="font-weight: normal;">Propeller counterforce speed [PWM]</th>
+        <td style="font-weight: normal;">{{ counterforce_speed }}</td>
+    </tr>
+    <tr>
+        <th style="font-weight: normal;">Kp</th>
+        <td style="font-weight: normal;">{{ kp_out }}</td>
+    </tr>
+    <tr>
+        <th style="font-weight: normal;">Ki</th>
+        <td style="font-weight: normal;">{{ ki_out }}</td>
+    </tr>
+    <tr>
+        <th style="font-weight: normal;">Kd</th>
+        <td style="font-weight: normal;">{{ kd_out }}</td>
     </tr>
     </tbody>
 </table>

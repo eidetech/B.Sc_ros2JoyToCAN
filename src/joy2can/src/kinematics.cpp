@@ -46,7 +46,7 @@ class Kinematics : public rclcpp::Node
         // IMU publisher
 		publisher_imu_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("imu", 10);
 		timer_imu_ = this->create_wall_timer(
-		1ms, std::bind(&Kinematics::timer_callback_imu, this));
+		0.1ms, std::bind(&Kinematics::timer_callback_imu, this));
 
 		}
 
@@ -120,25 +120,53 @@ class Kinematics : public rclcpp::Node
         float pitch_sp_readback = 0;
 
         float pitch_from_web_hmi = 0;
+        int idle_speed_from_web_hmi = 0;
+        int counterforce_speed_from_web_hmi = 0;
+
+        int idle_speed_to_web_hmi = 0;
+        int counterforce_speed_to_web_hmi = 0;
+
+        float kp_out = 0;
+        float ki_out = 0;
+        float kd_out = 0;
 
 	private:
         void timer_callback_imu(){
-        // Read IMU data and send ROS message
+        
+        can->receive_can();
+
+
+        // Receive CAN messages from IMU and propeller speeds.
         can->read_IMU_data();
         pitch = can->pitch;
         roll = can->roll;
         yaw = can->yaw;
         pitch_sp_readback = can->pitch_sp_readback;
 
-        imuData.data.resize(4);
+        can->receive_propeller();
+        idle_speed_to_web_hmi = can->rx_idle_speed;
+        counterforce_speed_to_web_hmi = can->rx_counterforce_speed;
+
+        can->receive_pid();
+
+        // Send ROS message with IMU data so that it can be logged with rqt:
+        imuData.data.resize(9);
         imuData.data[0] = pitch;
         imuData.data[1] = roll;
         imuData.data[2] = yaw;
         imuData.data[3] = pitch_sp_readback;
+        imuData.data[4] = can->rx_idle_speed;
+        imuData.data[5] = can->rx_counterforce_speed;
+        imuData.data[6] = can->rx_kp;
+        imuData.data[7] = can->rx_ki;
+        imuData.data[8] = can->rx_kd;
         // ROS publisher
 		publisher_imu_->publish(imuData);
-        // CAN sender
+        
+        // CAN senders
         can->send_pitch_sp(pitch_from_web_hmi);
+        can->send_propeller(idle_speed_from_web_hmi, counterforce_speed_from_web_hmi);
+        can->send_pid(kp_out, ki_out, kd_out);
         }
 
 		void timer_callback()
@@ -193,6 +221,7 @@ class Kinematics : public rclcpp::Node
 			this->qX.calcQuinticTraj(t0,t1,t_quintic,x0,x1,v0_x,v1_x,a0_x,a1_x);
 			this->qZ.calcQuinticTraj(t0,t1,t_quintic,z0,z1,v0_z,v1_z,a0_z,a1_z);
 
+            // Angle offset compensation with rotation matrix
             float theta = (-0.1)*PI/180;
             Matrix2f rot;
             Vector2f vec;
@@ -209,7 +238,7 @@ class Kinematics : public rclcpp::Node
             vec_vel = rot*vec_vel;
 
 			// Calculate the inverse kinematics based on the quintic trajectory
-			this->ik.calc(vec(0), vec(1), vec_vel(0), vec_vel(1));
+			this->ik.calc(qX.getPos(), qZ.getPos(), qX.getVel(), qZ.getVel());
 
             if(reset_initial_q_pos)
             {
@@ -336,7 +365,7 @@ class Kinematics : public rclcpp::Node
 
         void web_callback(const std_msgs::msg::Float32MultiArray::SharedPtr web_data)
 		{
-            //std::cout << "Incoming data from web." << std::endl;
+            std::cout << "Incoming data from web." << std::endl;
 
             // Update all job parameters with data streamed from the web HMI
             trajPlan.set_outer_frame_width(web_data->data[0]);
@@ -346,7 +375,14 @@ class Kinematics : public rclcpp::Node
             trajPlan.set_x_offset(web_data->data[4]);
             trajPlan.set_z_offset(web_data->data[5]);
             trajPlan.calc_vStep(web_data->data[6]);
-            pitch_from_web_hmi = web_data->data[8];
+            pitch_from_web_hmi = (int)(web_data->data[8]);
+            idle_speed_from_web_hmi = (int)(web_data->data[9]);
+            counterforce_speed_from_web_hmi = (int)(web_data->data[10]);
+            kp_out = web_data->data[11];
+            ki_out = web_data->data[12];
+            kd_out = web_data->data[13];
+
+            std::cout << web_data->data[10] << std::endl;
             
             // Debug check
             // std::cout << "web_data->data[0] = " << web_data->data[0] << ", trajPlan.getget_outer_frame_width() = " << trajPlan.get_outer_frame_width() << std::endl;

@@ -21,19 +21,23 @@ CANbus::CANbus()
         perror("Bind error");
     }
 
-    
     this->tx_cartCoord.can_id = 0x01; // ID of CAN message
     this->tx_cartCoord.can_dlc = 8; // Size of payload
 
     this->rx_cartCoord.can_id = 0x02; // ID of CAN message
     this->rx_cartCoord.can_dlc = 8; // Size of payload
 
-    this->tx_sprayStatus.can_id = 0x409; // ID of CAN message for sending spray status
+    this->tx_sprayStatus.can_id = 0x80; // ID of CAN message for sending spray status
     this->tx_sprayStatus.can_dlc = 8; // Size of payload
 
-    this->tx_pitch_sp.can_id = 0x200; // ID of CAN message for sending pitch setpoint
+    this->tx_propeller.can_id = 0x82; // ID of CAN message for sending propeller idle and counterforce speeds
+    this->tx_propeller.can_dlc = 8; // Size of payload
+
+    this->tx_pitch_sp.can_id = 0x84; // ID of CAN message for sending pitch setpoint
     this->tx_pitch_sp.can_dlc = 8; // Size of payload
 
+    this->tx_pid.can_id = 0x86; // ID of CAN message for sending pid
+    this->tx_pid.can_dlc = 8; // Size of payload
 }
 
 
@@ -89,6 +93,11 @@ void CANbus::send_data(float ps4Data[])
     write(this->_socket, &this->tx_cartCoord, sizeof(struct can_frame));
 }
 
+void CANbus::receive_can()
+{
+    read(this->_socket,&this->rx_can, sizeof(struct can_frame));
+}
+
 void CANbus::send_spray_status(float sprayStatus)
 {
     this->tx_sprayStatus.data[0] = (int)sprayStatus;
@@ -101,38 +110,95 @@ void CANbus::send_spray_status(float sprayStatus)
 
 void CANbus::read_IMU_data()
 {
-    read(this->_socket,&this->rx_IMU, sizeof(struct can_frame));
-    if(rx_IMU.can_id == 0x80)
+    if(rx_can.can_id == 0x88)
     {
-        uint16_t rx_pitch = rx_IMU.data[0] | rx_IMU.data[1] << 8;
+        uint16_t rx_pitch = rx_can.data[0] | rx_can.data[1] << 8;
         pitch = (float)rx_pitch;
         pitch = ((pitch-10000)/10000)*180/PI;
 
-        uint16_t rx_roll = rx_IMU.data[2] | rx_IMU.data[3] << 8;
+        uint16_t rx_roll = rx_can.data[2] | rx_can.data[3] << 8;
         roll = (float)rx_roll;
         roll = ((roll-10000)/10000)*180/PI;
 
-        uint16_t rx_yaw = rx_IMU.data[4] | rx_IMU.data[5] << 8;
+        uint16_t rx_yaw = rx_can.data[4] | rx_can.data[5] << 8;
         yaw = (float)rx_yaw;
         yaw = ((yaw-10000)/10000)*180/PI;
 
-        uint16_t rx_pitch_sp = rx_IMU.data[6] | rx_IMU.data[7] << 8;
+        uint16_t rx_pitch_sp = rx_can.data[6] | rx_can.data[7] << 8;
         pitch_sp_readback = (float)rx_pitch_sp;
         pitch_sp_readback = ((pitch_sp_readback-20000)/1000);
 
         t += 0.001;
 
-       // std::cout << "Pitch: " << pitch << ", Roll: " << roll << ", Yaw: " << yaw << ", Pitch setpoint readback: " << pitch_sp_readback << ", Time:" << t <<  std::endl;
+        std::cout << "Pitch: " << pitch << ", Roll: " << roll << ", Yaw: " << yaw << ", Pitch setpoint readback: " << pitch_sp_readback << ", Time:" << t <<  std::endl;
     }
 }
 
 void CANbus::send_pitch_sp(float pitch_sp)
 {
-    std::cout << "pitch_sp: " << pitch_sp << std::endl;
+    //std::cout << "pitch_sp: " << pitch_sp << std::endl;
     float pitch_sp_convert = pitch_sp * 1000.0;
     uint16_t pitch_sp_can = (int)pitch_sp_convert + 20000;
     this->tx_pitch_sp.data[0] = pitch_sp_can;
     this->tx_pitch_sp.data[1] = pitch_sp_can >> 8;
 
     write(this->_socket, &this->tx_pitch_sp, sizeof(struct can_frame));
+}
+
+void CANbus::receive_propeller()
+{
+    if(rx_can.can_id == 0x90)
+    {
+    rx_idle_speed = rx_can.data[0];
+    rx_counterforce_speed = rx_can.data[1];
+    //std::cout << "rx idle speed = " << rx_idle_speed << ", rx counterforce speed = " << rx_counterforce_speed << std::endl;
+    }
+}
+
+void CANbus::send_propeller(int idle_speed, int counterforce_speed)
+{
+    this->tx_propeller.data[0] = idle_speed;
+    this->tx_propeller.data[1] = counterforce_speed;
+    //std::cout << "tx idle_speed = " << idle_speed << ", tx counterforce_speed = " << counterforce_speed << std::endl;
+    write(this->_socket, &this->tx_propeller, sizeof(struct can_frame));
+}
+
+void CANbus::receive_pid()
+{
+    if(rx_can.can_id == 0x92)
+    {
+        float times = 1000.0;
+        int subtract = 20000.0;
+        uint16_t rx_kp_int = rx_can.data[0] | rx_can.data[1] << 8;
+        rx_kp = (float)rx_kp_int;
+        rx_kp = ((rx_kp-subtract)/times);
+
+        uint16_t rx_ki_int = rx_can.data[2] | rx_can.data[3] << 8;
+        rx_ki = (float)rx_ki_int;
+        rx_ki = ((rx_ki-subtract)/times);
+    
+        uint16_t rx_kd_int = rx_can.data[5] | rx_can.data[5] << 8;
+        rx_kd = (float)rx_kd_int;
+        rx_kd = ((rx_kd-subtract)/times);
+    }
+}
+
+void CANbus::send_pid(float kp, float ki, float kd)
+{
+    float times = 1000.0;
+    int subtract = 20000;
+
+    float kp_convert = kp * times;
+    uint16_t kp_can = (int)kp_convert + subtract;
+    float ki_convert = ki * times;
+    uint16_t ki_can = (int)ki_convert + subtract;
+    float kd_convert = kd * times;
+    uint16_t kd_can = (int)kd_convert + subtract;
+    this->tx_pid.data[0] = kp_can;
+    this->tx_pid.data[1] = kp_can >> 8;
+    this->tx_pid.data[2] = ki_can;
+    this->tx_pid.data[3] = ki_can >> 8;
+    this->tx_pid.data[4] = kd_can;
+    this->tx_pid.data[5] = kd_can >> 8;
+    write(this->_socket, &this->tx_pid, sizeof(struct can_frame));
 }

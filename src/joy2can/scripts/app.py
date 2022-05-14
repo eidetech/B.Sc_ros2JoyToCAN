@@ -22,7 +22,6 @@ app.config['JSON_SORT_KEYS'] = False
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
-
 # ROS2 node for publishing data from Flask server website
 class WebPublisher(Node):
 
@@ -42,6 +41,12 @@ class WebPublisher(Node):
 		self.percent_overlap = 0
 
 		self.pitch_sp = 0
+		self.idle_speed = 0
+		self.counterforce_speed = 0
+
+		self.kp_out = 0
+		self.ki_out = 0
+		self.kd_out = 0
 
 		self.counter = 0
 
@@ -62,7 +67,12 @@ class WebPublisher(Node):
 					float(self.z_offset),
 					float(self.percent_overlap),
 					float(self.job_status),
-					float(self.pitch_sp)]
+					float(self.pitch_sp),
+					float(self.idle_speed),
+					float(self.counterforce_speed),
+					float(self.kp_out),
+					float(self.ki_out),
+					float(self.kd_out)]
 		wp.counter += 1
 		# Publish data to ROS
 		self.publisher_.publish(msg)
@@ -105,7 +115,7 @@ class MotorSetpointSub(Node):
 		self.t 		   = msg.data[5]
 		self.t_total   = msg.data[6]
 		self.reset 	   = msg.data[7]
-		self.pitch 	   = msg.data[8]
+		self.pitch 	   = msg.data[8] # Pitch angle from IMU to web HMI
 
 if __name__ == '__main__':
 	# Initialize ROS node and web publisher object
@@ -119,13 +129,19 @@ if __name__ == '__main__':
 	@app.route("/")
 	def home():
 		return render_template("index.html", job_status=0,
-							   frame_width=wp.frame_width,
-							   frame_height=wp.frame_height,
-							   wall_width=wp.wall_width,
-							   wall_height=wp.wall_height,
-							   x_offset=wp.x_offset,
-							   z_offset=wp.z_offset,
-							   percent_overlap=wp.percent_overlap)
+											frame_width=wp.frame_width,
+											frame_height=wp.frame_height,
+											wall_width=wp.wall_width,
+											wall_height=wp.wall_height,
+											x_offset=wp.x_offset,
+											z_offset=wp.z_offset,
+											percent_overlap=wp.percent_overlap,
+											pitch_sp = wp.pitch_sp,
+											idle_speed = wp.idle_speed,
+											counterforce_speed = wp.counterforce_speed,
+											kp_out = wp.kp_out,
+											ki_out = wp.ki_out,
+											kd_out = wp.kd_out)
 
 	# App route for POST request updating the local parameters with data from the website
 	@app.route('/update_parameters', methods=['POST'])
@@ -147,7 +163,13 @@ if __name__ == '__main__':
 								   wall_height=wp.wall_height,
 								   x_offset=wp.x_offset,
 								   z_offset=wp.z_offset,
-								   percent_overlap=wp.percent_overlap)
+								   percent_overlap=wp.percent_overlap,
+								   pitch_sp=wp.pitch_sp,
+								   idle_speed=wp.idle_speed,
+								   counterforce_speed=wp.counterforce_speed,
+								   kp_out=wp.kp_out,
+								   ki_out=wp.ki_out,
+								   kd_out=wp.kd_out)
 
 	# App route for the control page (control.html)
 	@app.route('/control')
@@ -190,6 +212,12 @@ if __name__ == '__main__':
 		wp.z_offset = data['default']['z_offset']
 		wp.percent_overlap = data['default']['percent_overlap']
 		wp.job_status = data['default']['job_status']
+		wp.pitch_sp = data['default']['pitch_sp']
+		wp.idle_speed = data['default']['idle_speed']
+		wp.counterforce_speed = data['default']['counterforce_speed']
+		wp.kp_out = data['default']['kp_out']
+		wp.ki_out = data['default']['ki_out']
+		wp.kd_out =  data['default']['kd_out']
 		#print("wp frame:", data['default']['frame_width'])
 		return render_template("index.html", job_status=float(wp.job_status),
 							   frame_width=float(wp.frame_width),
@@ -198,7 +226,13 @@ if __name__ == '__main__':
 							   wall_height=float(wp.wall_height),
 							   x_offset=float(wp.x_offset),
 							   z_offset=float(wp.z_offset),
-							   percent_overlap=float(wp.percent_overlap))
+							   percent_overlap=float(wp.percent_overlap),
+							   pitch_sp=float(wp.pitch_sp),
+							   idle_speed=float(wp.idle_speed),
+							   counterforce_speed=float(wp.counterforce_speed),
+							   kp_out=float(wp.kp_out),
+							   ki_out=float(wp.ki_out),
+							   kd_out=float(wp.kd_out))
 
 	# App route for pulling the latest commit from GitHub
 	@app.route('/git_pull',  methods=['POST'])
@@ -222,10 +256,15 @@ if __name__ == '__main__':
 
 
 	# App route for POST request updating the local parameters with data from the website
-	@app.route('/update_pitch', methods=['POST'])
-	def update_pitch():
+	@app.route('/update_spraygun', methods=['POST'])
+	def update_spraygun():
 		if request.method == 'POST':
 			wp.pitch_sp = request.form['pitch_sp']
+			wp.idle_speed = request.form['idle_speed']
+			wp.counterforce_speed = request.form['counterforce_speed']
+			wp.kp_out = request.form['kp_out']
+			wp.ki_out = request.form['ki_out']
+			wp.kd_out = request.form['kd_out']
 			rclpy.spin_once(wp)
 			return render_template("index.html", job_status= 0,
 								   frame_width=wp.frame_width,
@@ -235,7 +274,12 @@ if __name__ == '__main__':
 								   x_offset=wp.x_offset,
 								   z_offset=wp.z_offset,
 								   percent_overlap=wp.percent_overlap,
-								   pitch_sp=wp.pitch_sp)
+								   pitch_sp=wp.pitch_sp,
+								   idle_speed=wp.idle_speed,
+								   counterforce_speed=wp.counterforce_speed,
+								   kp_out=wp.kp_out,
+								   ki_out=wp.ki_out,
+								   kd_out=wp.kd_out)
 
 
 	# Prints out where Flask is looking for the template folder. Useful for debugging if Flask can not find index.html for example
@@ -249,7 +293,7 @@ if __name__ == '__main__':
 	executor_thread = threading.Thread(target=executor.spin, daemon=True)
 	executor_thread.start()
 
-	socketio.run(app, debug=True, use_reloader=False,  port=5011, host='192.168.0.107')
+	socketio.run(app, debug=True, use_reloader=False,  port=5013, host='192.168.0.107')
 
 	# Destroy the node explicitly
 	# (optional - otherwise it will be done automatically

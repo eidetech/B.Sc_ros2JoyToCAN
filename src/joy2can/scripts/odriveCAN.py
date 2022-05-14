@@ -48,8 +48,8 @@ def main(args=None):
 
 	#bus = can.Bus("vcan0", bustype="virtual")
 	bus = can.Bus("can0", bustype="socketcan")
-	q1 = Motor(0x01, bus, db, 8192, 40, 20, 0.5) # axisID, bus, db, encoder_cpr, kp, ki, kd
-	q2 = Motor(0x00, bus, db, 8192, 40, 20, 0.5) # axisID, bus, db, encoder_cpr, kp, ki, kd
+	q1 = Motor(0x01, bus, db, 8192, 3, 0.01, 0.9) # axisID, bus, db, encoder_cpr, kp, ki, kd
+	q2 = Motor(0x00, bus, db, 8192, 3, 0.01, 0.9) # axisID, bus, db, encoder_cpr, kp, ki, kd
 
 	q1.setAxisState(AXIS_STATE_CLOSED_LOOP_CONTROL)
 	q2.setAxisState(AXIS_STATE_CLOSED_LOOP_CONTROL)
@@ -70,25 +70,27 @@ def main(args=None):
 
 		posEst_q1, velEst_q1, encEst_q1 = q1.getEstimates()
 		posEst_q2, velEst_q2, encEst_q2 = q2.getEstimates()
+		#posEst_q1 = -posEst_q1
+		#posEst_q2 = -posEst_q2
+
+		odrive_data_pub.q1_pos_est = posEst_q1
+		odrive_data_pub.q2_pos_est = posEst_q2
+		odrive_data_pub.q1_pos = motorSP.angPos_q1 - motorSP.angPos_q1_initial
+		odrive_data_pub.q2_pos = motorSP.angPos_q2 - motorSP.angPos_q2_initial
+		odrive_data_pub.q1_vel = motorSP.angVel_q1
+		odrive_data_pub.q2_vel = motorSP.angVel_q2
+		odrive_data_pub.q1_vel_est = velEst_q1
+		odrive_data_pub.q2_vel_est = velEst_q2
 
 		if(motorSP.mode == 0 and motorSP.lastMode == 1): # Set parameteres for velocity control
 			print("Setting control mode to velocity control")
 			q2.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_VELOCITY_CONTROL)
 			q1.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_VELOCITY_CONTROL)
-			q2.setLimits(30, 30)
-			q1.setLimits(30, 30)
+			q2.setLimits(20, 25)
+			q1.setLimits(20, 25)
 			motorSP.lastMode = 0
 			prevT = motorSP.get_clock().now().nanoseconds / 1.0e9
 		elif(motorSP.mode == 0 and motorSP.lastMode == 0): # Run system in velocity control mode
-
-			odrive_data_pub.q1_pos_est = posEst_q1
-			odrive_data_pub.q2_pos_est = posEst_q2
-			odrive_data_pub.q1_pos = motorSP.angPos_q1 - motorSP.angPos_q1_initial
-			odrive_data_pub.q2_pos = motorSP.angPos_q2 - motorSP.angPos_q2_initial
-			odrive_data_pub.q1_vel = motorSP.angVel_q1
-			odrive_data_pub.q2_vel = motorSP.angVel_q2
-			odrive_data_pub.q1_vel_est = velEst_q1
-			odrive_data_pub.q2_vel_est = velEst_q2
 
 			#print("angVel_q1:", motorSP.angVel_q1, "estVel:", velEst_q1)
 
@@ -156,8 +158,8 @@ def main(args=None):
 			print("Setting control mode to position control")
 			q2.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_POSITION_CONTROL)
 			q1.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_POSITION_CONTROL)
-			q2.setLimits(4, 10)
-			q1.setLimits(6, 10)
+			q2.setLimits(3, 25)
+			q1.setLimits(4, 25)
 
 			#q2.setLimits(30, 10)
 			#q1.setLimits(30, 10)
