@@ -13,8 +13,8 @@ socket.on('percent', function(percent) {
     $('#percentage').text(Math.round(percent)+ "%");
 });
 
-socket.on('angVel_q1', function(info) {
-    $('#angVel_q1').text(info);
+socket.on('pitch', function(info) {
+    $('#pitch').text(info);
 });
 
 socket.on('angVel_q2', function(info) {

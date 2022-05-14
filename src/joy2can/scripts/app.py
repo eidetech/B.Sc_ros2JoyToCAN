@@ -41,6 +41,8 @@ class WebPublisher(Node):
 		self.z_offset = 0
 		self.percent_overlap = 0
 
+		self.pitch_sp = 0
+
 		self.counter = 0
 
 		# 0 = stop_job
@@ -59,7 +61,8 @@ class WebPublisher(Node):
 					float(self.x_offset),
 					float(self.z_offset),
 					float(self.percent_overlap),
-					float(self.job_status)]
+					float(self.job_status),
+					float(self.pitch_sp)]
 		wp.counter += 1
 		# Publish data to ROS
 		self.publisher_.publish(msg)
@@ -91,14 +94,18 @@ class MotorSetpointSub(Node):
 
 		self.reset = 0
 
+		self.pitch = 0 # Pitch angle from IMU to web HMI
+
 	def listener_callback(self, msg):
 		self.angVel_q1 = msg.data[0]
 		self.angVel_q2 = msg.data[1]
 		self.angPos_q1 = msg.data[2]
 		self.angPos_q2 = msg.data[3]
-		self.mode = 	 msg.data[4]
-		self.t = 		 msg.data[5]
-		self.t_total =   msg.data[6]
+		self.mode 	   = msg.data[4]
+		self.t 		   = msg.data[5]
+		self.t_total   = msg.data[6]
+		self.reset 	   = msg.data[7]
+		self.pitch 	   = msg.data[8]
 
 if __name__ == '__main__':
 	# Initialize ROS node and web publisher object
@@ -204,6 +211,7 @@ if __name__ == '__main__':
 
 	@socketio.on('client_data')
 	def client_data():
+		emit('pitch', motorSP.pitch)
 		if(motorSP.t_total != 0):
 			emit('angVel_q1', motorSP.angVel_q1)
 			emit('angVel_q2', motorSP.angVel_q2)
@@ -211,6 +219,24 @@ if __name__ == '__main__':
 			emit('percent', percent)
 		else:
 			emit('percent', 0)
+
+
+	# App route for POST request updating the local parameters with data from the website
+	@app.route('/update_pitch', methods=['POST'])
+	def update_pitch():
+		if request.method == 'POST':
+			wp.pitch_sp = request.form['pitch_sp']
+			rclpy.spin_once(wp)
+			return render_template("index.html", job_status= 0,
+								   frame_width=wp.frame_width,
+								   frame_height=wp.frame_height,
+								   wall_width=wp.wall_width,
+								   wall_height=wp.wall_height,
+								   x_offset=wp.x_offset,
+								   z_offset=wp.z_offset,
+								   percent_overlap=wp.percent_overlap,
+								   pitch_sp=wp.pitch_sp)
+
 
 	# Prints out where Flask is looking for the template folder. Useful for debugging if Flask can not find index.html for example
 	# app.config['EXPLAIN_TEMPLATE_LOADING'] = True
@@ -223,7 +249,7 @@ if __name__ == '__main__':
 	executor_thread = threading.Thread(target=executor.spin, daemon=True)
 	executor_thread.start()
 
-	socketio.run(app, debug=True, use_reloader=False,  port=5002, host='0.0.0.0')
+	socketio.run(app, debug=True, use_reloader=False,  port=5011, host='192.168.0.107')
 
 	# Destroy the node explicitly
 	# (optional - otherwise it will be done automatically

@@ -46,7 +46,7 @@ class Kinematics : public rclcpp::Node
         // IMU publisher
 		publisher_imu_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("imu", 10);
 		timer_imu_ = this->create_wall_timer(
-		10ms, std::bind(&Kinematics::timer_callback_imu, this));
+		1ms, std::bind(&Kinematics::timer_callback_imu, this));
 
 		}
 
@@ -115,22 +115,36 @@ class Kinematics : public rclcpp::Node
 
         // IMU pitch angle
         float pitch = 0;
+        float roll = 0;
+        float yaw = 0;
+        float pitch_sp_readback = 0;
+
+        float pitch_from_web_hmi = 0;
 
 	private:
         void timer_callback_imu(){
         // Read IMU data and send ROS message
-        pitch = can->read_IMU_pitch();
-        
-        imuData.data.resize(1);
+        can->read_IMU_data();
+        pitch = can->pitch;
+        roll = can->roll;
+        yaw = can->yaw;
+        pitch_sp_readback = can->pitch_sp_readback;
+
+        imuData.data.resize(4);
         imuData.data[0] = pitch;
+        imuData.data[1] = roll;
+        imuData.data[2] = yaw;
+        imuData.data[3] = pitch_sp_readback;
         // ROS publisher
 		publisher_imu_->publish(imuData);
+        // CAN sender
+        can->send_pitch_sp(pitch_from_web_hmi);
         }
 
 		void timer_callback()
 		{
 		// Resize motorVel array to 3 elements (this could be refactored to not happen every callback)
-		motorVel.data.resize(8);
+		motorVel.data.resize(9);
 
 		// Set offsets from origo to pulleys
 		// ik.setOffsets(0, trajPlan.get_outer_frame_height(), trajPlan.get_outer_frame_width(), trajPlan.get_outer_frame_height());
@@ -173,7 +187,7 @@ class Kinematics : public rclcpp::Node
 
             sprayStatus = trajPlan.posVelAccTime(idx, 15);
 
-             mode = 0; // 0 = velocity control
+            mode = 0; // 0 = velocity control
 
 			// Calculate quintic trajectory for x and z
 			this->qX.calcQuinticTraj(t0,t1,t_quintic,x0,x1,v0_x,v1_x,a0_x,a1_x);
@@ -225,12 +239,15 @@ class Kinematics : public rclcpp::Node
 			motorVel.data[5] = this->t;
             motorVel.data[6] = this->t_total;
             motorVel.data[7] = 0.0; // Reset signal, 0 = False
+            motorVel.data[8] = pitch; // Pitch angle from IMU to web HMI
             }
 			// Terminal feedback
 			std::cout << "x: " << qX.getPos() << ", z: " << qZ.getPos() << ", t: " << motorVel.data[5] << std::endl;
 
 			// ROS publisher
 			publisher_->publish(motorVel);
+
+            can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
 
 			// Increase time variables with 10ms (0.01s)
 			this->t += 0.01;
@@ -254,6 +271,7 @@ class Kinematics : public rclcpp::Node
             motorVel.data[4] = mode;
 			motorVel.data[5] = this->t;
             motorVel.data[7] = 0.0; // Reset signal, 0 = False
+            motorVel.data[8] = pitch; // Pitch angle from IMU to web HMI
 
             // ROS publisher
             publisher_->publish(motorVel);
@@ -311,7 +329,7 @@ class Kinematics : public rclcpp::Node
             }
             // CAN publisher
             //can->send_data(can_ps4_output);
-            can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
+
 
 
 		}
@@ -328,6 +346,7 @@ class Kinematics : public rclcpp::Node
             trajPlan.set_x_offset(web_data->data[4]);
             trajPlan.set_z_offset(web_data->data[5]);
             trajPlan.calc_vStep(web_data->data[6]);
+            pitch_from_web_hmi = web_data->data[8];
             
             // Debug check
             // std::cout << "web_data->data[0] = " << web_data->data[0] << ", trajPlan.getget_outer_frame_width() = " << trajPlan.get_outer_frame_width() << std::endl;

@@ -28,9 +28,15 @@ class CANbus
 
         void send_data(float ps4Data[]);
         void send_spray_status(float sprayStatus);
-        float read_IMU_pitch();
+        void read_IMU_data();
+        void send_pitch_sp(float pitch_sp);
 
-        float pitch;
+        float pitch = 0;
+        float roll = 0;
+        float yaw = 0;
+        float pitch_sp_readback = 0;
+
+        float t = 0;
 
     private:
         int _socket;
@@ -43,6 +49,7 @@ class CANbus
         struct can_frame tx_sprayStatus;
 
         struct can_frame rx_IMU;
+        struct can_frame tx_pitch_sp;
 };
 
 #endif

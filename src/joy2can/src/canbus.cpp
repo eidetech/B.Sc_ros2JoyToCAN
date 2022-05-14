@@ -31,6 +31,9 @@ CANbus::CANbus()
     this->tx_sprayStatus.can_id = 0x409; // ID of CAN message for sending spray status
     this->tx_sprayStatus.can_dlc = 8; // Size of payload
 
+    this->tx_pitch_sp.can_id = 0x200; // ID of CAN message for sending pitch setpoint
+    this->tx_pitch_sp.can_dlc = 8; // Size of payload
+
 }
 
 
@@ -96,15 +99,40 @@ void CANbus::send_spray_status(float sprayStatus)
     write(this->_socket, &this->tx_sprayStatus, sizeof(struct can_frame));
 }
 
-float CANbus::read_IMU_pitch()
+void CANbus::read_IMU_data()
 {
     read(this->_socket,&this->rx_IMU, sizeof(struct can_frame));
     if(rx_IMU.can_id == 0x80)
     {
-        uint16_t rx = rx_IMU.data[0] | rx_IMU.data[1] << 8;
-        pitch = (float)rx;
+        uint16_t rx_pitch = rx_IMU.data[0] | rx_IMU.data[1] << 8;
+        pitch = (float)rx_pitch;
         pitch = ((pitch-10000)/10000)*180/PI;
-        //std::cout << "Pitch: " << ((pitch-10000)/10000)*180/PI << std::endl;
+
+        uint16_t rx_roll = rx_IMU.data[2] | rx_IMU.data[3] << 8;
+        roll = (float)rx_roll;
+        roll = ((roll-10000)/10000)*180/PI;
+
+        uint16_t rx_yaw = rx_IMU.data[4] | rx_IMU.data[5] << 8;
+        yaw = (float)rx_yaw;
+        yaw = ((yaw-10000)/10000)*180/PI;
+
+        uint16_t rx_pitch_sp = rx_IMU.data[6] | rx_IMU.data[7] << 8;
+        pitch_sp_readback = (float)rx_pitch_sp;
+        pitch_sp_readback = ((pitch_sp_readback-20000)/1000);
+
+        t += 0.001;
+
+       // std::cout << "Pitch: " << pitch << ", Roll: " << roll << ", Yaw: " << yaw << ", Pitch setpoint readback: " << pitch_sp_readback << ", Time:" << t <<  std::endl;
     }
-    return pitch;
+}
+
+void CANbus::send_pitch_sp(float pitch_sp)
+{
+    std::cout << "pitch_sp: " << pitch_sp << std::endl;
+    float pitch_sp_convert = pitch_sp * 1000.0;
+    uint16_t pitch_sp_can = (int)pitch_sp_convert + 20000;
+    this->tx_pitch_sp.data[0] = pitch_sp_can;
+    this->tx_pitch_sp.data[1] = pitch_sp_can >> 8;
+
+    write(this->_socket, &this->tx_pitch_sp, sizeof(struct can_frame));
 }

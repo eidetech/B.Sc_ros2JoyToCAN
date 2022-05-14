@@ -72,12 +72,15 @@
     </div>
     {% endif %}
 
-    <!-- <p id="angVel_q1" style="display: inline;"> </p>
-    <p id="angVel_q2" style="display: inline;"> </p> -->
+    <p id="pitch" style="display: inline;"> </p>
+    <!-- <p id="angVel_q2" style="display: inline;"> </p> -->
 
 
     <div class="col-6">
   <h3>Configure job parameters</h3>
+  <div class="progress w-100 m-3" style="height: 50px;">
+    <div class="progress-bar progress-bar-striped progress-bar-animated bg-secondary" role="progressbar" id="progress_bar" style="width: 0%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"><h5 id="percentage"></h5></div>
+  </div>
     <form id="parameters_form" action="/update_parameters" method="POST">
 
 <label for="frame_width" class="form-label">Frame Width [m]</label>
@@ -160,6 +163,19 @@
 <form id="parameters_form" action="/home" method="POST">
     <button type="submit" class="btn btn-danger mt-3">Home machine</button>
 </form>
+<br>
+<form id="pitch_form" action="/update_pitch" method="POST">
+<label for="pitch_sp" class="form-label">Pitch setpoint [deg]</label>
+<div class="input-group mb-3">
+    <span class="input-group-text"><img src="/static/bootstrap-icons/caret-right.svg" width="20" height="20"></span>
+    {% if pitch_sp %}
+    <input type="text" id="pitch_sp" name="pitch_sp" class="form-control" value="{{ pitch_sp }}" aria-label="Pitch setpoint" aria-describedby="basic-addon1">
+    {% else %}
+    <input type="text" id="pitch_sp" name="pitch_sp" class="form-control" aria-label="Pitch setpoint" aria-describedby="basic-addon1">
+    {% endif %}
+</div>
+    <button type="submit" class="btn btn-danger mt-3">Update pitch setpoint</button>
+</form>
 
     </div>
     <div class="col-6">
@@ -200,6 +216,10 @@
     <tr>
         <th style="font-weight: normal;">Percent overlap [%]</th>
         <td style="font-weight: normal;">{{ percent_overlap }}</td>
+    </tr>
+    <tr>
+        <th style="font-weight: normal;">Pitch setpoint [deg]</th>
+        <td style="font-weight: normal;">{{ pitch_sp }}</td>
     </tr>
     </tbody>
 </table>
