@@ -266,7 +266,7 @@ if __name__ == '__main__':
 			wp.ki_out = request.form['ki_out']
 			wp.kd_out = request.form['kd_out']
 			rclpy.spin_once(wp)
-			return render_template("index.html", job_status= 0,
+			return render_template("index.html",
 								   frame_width=wp.frame_width,
 								   frame_height=wp.frame_height,
 								   wall_width=wp.wall_width,
@@ -293,7 +293,7 @@ if __name__ == '__main__':
 	executor_thread = threading.Thread(target=executor.spin, daemon=True)
 	executor_thread.start()
 
-	socketio.run(app, debug=True, use_reloader=False,  port=5013, host='192.168.0.107')
+	socketio.run(app, debug=True, use_reloader=False,  port=5000, host='10.0.0.188')
 
 	# Destroy the node explicitly
 	# (optional - otherwise it will be done automatically

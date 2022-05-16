@@ -48,21 +48,13 @@ def main(args=None):
 
 	#bus = can.Bus("vcan0", bustype="virtual")
 	bus = can.Bus("can0", bustype="socketcan")
-	q1 = Motor(0x01, bus, db, 8192, 3, 0.01, 0.9) # axisID, bus, db, encoder_cpr, kp, ki, kd
-	q2 = Motor(0x00, bus, db, 8192, 3, 0.01, 0.9) # axisID, bus, db, encoder_cpr, kp, ki, kd
+	q1 = Motor(0x01, bus, db, 8192, 20, 10, 0) # axisID, bus, db, encoder_cpr, kp, ki, kd
+	q2 = Motor(0x00, bus, db, 8192, 20, 10, 0) # axisID, bus, db, encoder_cpr, kp, ki, kd
 
 	q1.setAxisState(AXIS_STATE_CLOSED_LOOP_CONTROL)
 	q2.setAxisState(AXIS_STATE_CLOSED_LOOP_CONTROL)
 
 	pid = True
-
-	prevT = 0
-
-	eprev_q1 = 0
-	eprev_q2 = 0
-
-	eintegral_q1 = 0
-	eintegral_q2 = 0
 
 	while True:
 		rclpy.spin_once(motorSP)
@@ -86,10 +78,17 @@ def main(args=None):
 			print("Setting control mode to velocity control")
 			q2.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_VELOCITY_CONTROL)
 			q1.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_VELOCITY_CONTROL)
-			q2.setLimits(20, 25)
-			q1.setLimits(20, 25)
+			q2.setLimits(40, 25)
+			q1.setLimits(40, 25)
 			motorSP.lastMode = 0
 			prevT = motorSP.get_clock().now().nanoseconds / 1.0e9
+
+			eprev_q1 = 0
+			eprev_q2 = 0
+
+			eintegral_q1 = 0
+			eintegral_q2 = 0
+
 		elif(motorSP.mode == 0 and motorSP.lastMode == 0): # Run system in velocity control mode
 
 			#print("angVel_q1:", motorSP.angVel_q1, "estVel:", velEst_q1)
@@ -158,11 +157,9 @@ def main(args=None):
 			print("Setting control mode to position control")
 			q2.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_POSITION_CONTROL)
 			q1.setControlMode(INPUT_MODE_PASSTHROUGH, CONTROL_MODE_POSITION_CONTROL)
-			q2.setLimits(3, 25)
-			q1.setLimits(4, 25)
+			q2.setLimits(4, 25)
+			q1.setLimits(6, 25)
 
-			#q2.setLimits(30, 10)
-			#q1.setLimits(30, 10)
 			motorSP.lastMode = 1
 		elif(motorSP.mode == 1 and motorSP.lastMode == 1): # Run system in position control mode back to origo (with offsets)
 			print("Going home...")

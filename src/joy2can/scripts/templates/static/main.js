@@ -14,7 +14,8 @@ socket.on('percent', function(percent) {
 });
 
 socket.on('pitch', function(info) {
-    $('#pitch').text(info);
+    $('#pitch').text("(" + info.toFixed(2) + ")");
+    document.getElementById("pitch_sp").value = info.toFixed(2);
 });
 
 socket.on('angVel_q2', function(info) {

@@ -136,7 +136,7 @@ void CANbus::read_IMU_data()
 
 void CANbus::send_pitch_sp(float pitch_sp)
 {
-    //std::cout << "pitch_sp: " << pitch_sp << std::endl;
+    std::cout << "pitch_sp: " << pitch_sp << std::endl;
     float pitch_sp_convert = pitch_sp * 1000.0;
     uint16_t pitch_sp_can = (int)pitch_sp_convert + 20000;
     this->tx_pitch_sp.data[0] = pitch_sp_can;

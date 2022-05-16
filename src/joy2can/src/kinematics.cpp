@@ -92,6 +92,8 @@ class Kinematics : public rclcpp::Node
         // mode = 1 ==> position control
         int mode = 1; // Start system in position control in order to home robot if the robot is not at home
 
+        int last_web_hmi_mode = 0; // Used to not reset trajectory planner when a new start signal is incoming (from updating parameters on web HMI) 
+
 		// Variables used for quintic trajectory planning
 		float t0 = 0.;
 		float t1 = 0.;
@@ -167,6 +169,7 @@ class Kinematics : public rclcpp::Node
         can->send_pitch_sp(pitch_from_web_hmi);
         can->send_propeller(idle_speed_from_web_hmi, counterforce_speed_from_web_hmi);
         can->send_pid(kp_out, ki_out, kd_out);
+        can->send_spray_status(sprayStatus);
         }
 
 		void timer_callback()
@@ -375,7 +378,7 @@ class Kinematics : public rclcpp::Node
             trajPlan.set_x_offset(web_data->data[4]);
             trajPlan.set_z_offset(web_data->data[5]);
             trajPlan.calc_vStep(web_data->data[6]);
-            pitch_from_web_hmi = (int)(web_data->data[8]);
+            pitch_from_web_hmi = (web_data->data[8]);
             idle_speed_from_web_hmi = (int)(web_data->data[9]);
             counterforce_speed_from_web_hmi = (int)(web_data->data[10]);
             kp_out = web_data->data[11];
@@ -388,6 +391,8 @@ class Kinematics : public rclcpp::Node
             // std::cout << "web_data->data[0] = " << web_data->data[0] << ", trajPlan.getget_outer_frame_width() = " << trajPlan.get_outer_frame_width() << std::endl;
             if ((int)web_data->data[7] == 2) // Start job
             {
+                if(last_web_hmi_mode != 2)
+                {
                 ik.setOffsets(0, trajPlan.get_outer_frame_height(), trajPlan.get_outer_frame_width(), trajPlan.get_outer_frame_height());
                 trajPlan.reset();
                 trajPlan.plan();
@@ -400,12 +405,16 @@ class Kinematics : public rclcpp::Node
                 t_quintic = 0.;
                 run = true;
 
+                last_web_hmi_mode = 2;
+                }
+
             }else if ((int)web_data->data[7] == 1) // Pause job
             {
                 run = false;
                 // CAN publisher
                 sprayStatus = 2; // Stop spray gun
                 can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
+                last_web_hmi_mode = 1;
             }else{ // Stop job
                 run = false;
                 idx = 0;
@@ -415,6 +424,7 @@ class Kinematics : public rclcpp::Node
                 // CAN publisher
                 sprayStatus = 2; // Stop spray gun
                 can->send_spray_status(sprayStatus); // Sends CAN messages to MCU controlling spray gun
+                last_web_hmi_mode = 0;
             }
             
             

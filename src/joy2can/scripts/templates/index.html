@@ -72,7 +72,6 @@
     </div>
     {% endif %}
 
-    <p id="pitch" style="display: inline;"> </p>
     <!-- <p id="angVel_q2" style="display: inline;"> </p> -->
 
 
@@ -162,10 +161,11 @@
 <br>
 <form id="pitch_form" action="/update_spraygun" method="POST">
 <label for="pitch_sp" class="form-label">Pitch setpoint [deg]</label>
+<p id="pitch" style="display: inline;"></p>
 <div class="input-group mb-3">
     <span class="input-group-text"><img src="/static/bootstrap-icons/compass.svg" width="20" height="20"></span>
     {% if pitch_sp %}
-    <input type="text" id="pitch_sp" name="pitch_sp" class="form-control" value="{{ pitch_sp }}" aria-label="Pitch setpoint" aria-describedby="basic-addon1">
+    <input type="text" id="pitch_sp" name="pitch_sp" class="form-control" aria-label="Pitch setpoint" aria-describedby="basic-addon1">
     {% else %}
     <input type="text" id="pitch_sp" name="pitch_sp" class="form-control" aria-label="Pitch setpoint" aria-describedby="basic-addon1">
     {% endif %}
